@@ -1,0 +1,3864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOCHIMELO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Press Start 2P', cursive;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #E0BBE4 0%, #F3E5F5 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        body.app-loading .header-container,
+        body.app-loading .container {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        body.app-ready .header-container,
+        body.app-ready .container {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            transition: opacity 0.35s ease;
+        }
+        .header-container {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .header-text {
+            color: #6A1B9A;
+            font-size: 20px;
+            text-shadow: 
+                3px 3px 6px rgba(0,0,0,0.5),
+                0 0 10px rgba(255,255,255,0.8);
+            margin: 0;
+            line-height: 1;
+            font-family: 'Press Start 2P', cursive;
+            opacity: 1;
+            transition: opacity 0.35s ease, color 0.35s ease, text-shadow 0.35s ease, transform 0.35s ease;
+        }
+        body.brand-faded .header-text {
+            color: #C8A2D8;
+            text-shadow:
+                1px 1px 2px rgba(255,255,255,0.5),
+                0 0 6px rgba(224, 187, 228, 0.45);
+            opacity: 0.42;
+            transform: scale(0.96);
+        }
+
+        .container {
+            text-align: center;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        .splash-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background:
+                radial-gradient(circle at 50% 45%, rgba(255,255,255,0.92) 0%, rgba(245, 228, 250, 0.88) 28%, rgba(224, 187, 228, 0.96) 100%);
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+        .splash-screen.is-hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .splash-screen.is-fading {
+            animation: splashFadeOut 0.9s ease forwards;
+        }
+        .splash-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            padding: 28px 34px;
+            border-radius: 28px;
+            border: 4px solid rgba(106, 27, 154, 0.22);
+            background: rgba(255,255,255,0.52);
+            box-shadow: 0 18px 36px rgba(106, 27, 154, 0.16);
+            backdrop-filter: blur(6px);
+        }
+        .splash-title {
+            color: #6A1B9A;
+            font-size: 22px;
+            letter-spacing: 2px;
+            text-shadow:
+                2px 2px 0 rgba(255,255,255,0.9),
+                0 0 14px rgba(255, 255, 255, 0.8);
+            animation: splashPulse 1.6s ease-in-out infinite;
+        }
+        .splash-subtitle {
+            color: #8E24AA;
+            font-size: 9px;
+            line-height: 1.7;
+            margin: 0;
+            opacity: 0.9;
+        }
+        .is-hidden {
+            display: none !important;
+        }
+        h1 {
+            font-family: 'Press Start 2P', cursive;
+            color: #6A1B9A;
+            font-size: 24px;
+            text-shadow: 
+                3px 3px 6px rgba(0,0,0,0.5),
+                0 0 10px rgba(255,255,255,0.8);
+            margin: 0;
+            line-height: 1;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 10px rgba(106, 27, 154, 0.5), inset 0 0 10px rgba(255,255,255,0.2); }
+            50% { box-shadow: 0 0 20px rgba(106, 27, 154, 0.8), inset 0 0 15px rgba(255,255,255,0.4); }
+        }
+        @keyframes blinkCursor {
+            0%, 49% { opacity: 1; }
+            50%, 100% { opacity: 0; }
+        }
+        @keyframes twinkle {
+            0%, 100% {
+                transform: scale(0.85);
+                opacity: 0.45;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+        }
+        @keyframes molangFloat {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                transform: translateY(-10px) scale(1.03);
+            }
+        }
+        @keyframes splashPulse {
+            0%, 100% {
+                transform: translateY(0) scale(1);
+                opacity: 0.95;
+            }
+            50% {
+                transform: translateY(-6px) scale(1.03);
+                opacity: 1;
+            }
+        }
+        @keyframes splashFadeOut {
+            0% { opacity: 1; }
+            100% { opacity: 0; visibility: hidden; }
+        }
+        button {
+            display: block;
+            width: 250px;
+            padding: 20px;
+            margin: 20px auto;
+            font-size: 16px;
+            font-family: 'Press Start 2P', cursive;
+            border: 3px solid #6A1B9A;
+            border-radius: 20px;
+            cursor: pointer;
+            animation: bounce 2s ease-in-out infinite, glow 1.5s ease-in-out infinite;
+            text-transform: uppercase;
+        }
+        .login-btn {
+            background: linear-gradient(145deg, #D1C4E9, #E1BEE7);
+            color: #4A148C;
+        }
+        .login-btn:hover {
+            background: linear-gradient(145deg, #BA68C8, #6A1B9A);
+            color: white;
+            transform: scale(1.05);
+            animation: glow 0.5s ease-in-out;
+        }
+        .create-btn {
+            background: linear-gradient(145deg, #F3E5F5, #E8DAEF);
+            color: #4A148C;
+        }
+        .create-btn:hover {
+            background: linear-gradient(145deg, #CE93D8, #AB47BC);
+            color: white;
+            transform: scale(1.05);
+            animation: glow 0.5s ease-in-out;
+        }
+        #welcome-page {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 24px;
+            box-sizing: border-box;
+        }
+        .welcome-title {
+            position: absolute;
+            top: 32px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #8E24AA;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-shadow:
+                2px 2px 0 rgba(255,255,255,0.9),
+                4px 4px 10px rgba(106, 27, 154, 0.35);
+            white-space: nowrap;
+            z-index: 2;
+        }
+        .welcome-title-text {
+            display: inline-block;
+        }
+        .welcome-heart {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 8px rgba(255,255,255,0.9)) drop-shadow(0 0 10px rgba(142, 36, 170, 0.28));
+            flex-shrink: 0;
+        }
+        .typing-cursor::after {
+            content: '_';
+            display: inline-block;
+            margin-left: 6px;
+            animation: blinkCursor 0.8s steps(1) infinite;
+        }
+        .welcome-center {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+        }
+        .welcome-molang {
+            width: min(230px, 54vw);
+            height: auto;
+            margin: 0 auto -12px;
+            display: block;
+            image-rendering: auto;
+            filter:
+                drop-shadow(0 0 10px rgba(255, 255, 255, 0.85))
+                drop-shadow(0 0 18px rgba(255, 214, 235, 0.9))
+                drop-shadow(0 10px 24px rgba(106, 27, 154, 0.18));
+            transform-origin: center bottom;
+            animation: molangFloat 2.6s ease-in-out infinite;
+        }
+        .start-btn {
+            background: linear-gradient(145deg, #FFE082, #FFCA28);
+            color: #6A1B9A;
+            position: relative;
+            z-index: 2;
+            margin-top: 0;
+            box-shadow:
+                0 0 18px rgba(255, 214, 102, 0.55),
+                0 10px 24px rgba(106, 27, 154, 0.18);
+        }
+        .start-btn:hover {
+            background: linear-gradient(145deg, #FFD54F, #FFB300);
+            color: #4A148C;
+            transform: scale(1.05);
+            animation: glow 0.5s ease-in-out;
+        }
+        .settings-wrap {
+            position: absolute;
+            top: 20px;
+            right: 22px;
+            z-index: 4;
+        }
+        .music-wrap {
+            position: absolute;
+            top: 20px;
+            right: 88px;
+            z-index: 4;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+        .music-wrap.is-hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-6px);
+        }
+        .music-btn {
+            width: auto;
+            min-width: 74px;
+            height: 38px;
+            margin: 0;
+            padding: 0 12px;
+            border-radius: 18px;
+            border: 3px solid #6A1B9A;
+            background: linear-gradient(145deg, #F8BBD0, #E1BEE7);
+            color: #6A1B9A;
+            font-size: 10px;
+            letter-spacing: 0.6px;
+            box-shadow: 0 0 18px rgba(106, 27, 154, 0.22);
+            animation: glow 1.5s ease-in-out infinite;
+        }
+        .music-btn:hover {
+            transform: scale(1.05);
+        }
+        .music-btn.is-muted {
+            background: linear-gradient(145deg, #EFE3F5, #D9C8E8);
+            color: #8E24AA;
+        }
+        .settings-btn {
+            width: 54px;
+            height: 54px;
+            margin: 0;
+            padding: 0;
+            border-radius: 18px;
+            border: 3px solid #6A1B9A;
+            background:
+                url('settings_icon.png') center/32px 32px no-repeat,
+                linear-gradient(145deg, #F8BBD0, #E1BEE7);
+            box-shadow: 0 0 18px rgba(106, 27, 154, 0.28);
+            animation: glow 1.5s ease-in-out infinite;
+        }
+        .settings-btn:hover {
+            transform: scale(1.06) rotate(8deg);
+        }
+        .settings-menu {
+            position: absolute;
+            top: 64px;
+            right: 0;
+            width: 180px;
+            padding: 12px;
+            border: 3px solid #6A1B9A;
+            border-radius: 20px;
+            background: linear-gradient(145deg, rgba(255,255,255,0.96), rgba(243,229,245,0.96));
+            box-shadow: 0 14px 30px rgba(106,27,154,0.22);
+        }
+        .menu-option {
+            width: 100%;
+            margin: 10px 0 0 0;
+            padding: 14px 12px;
+            font-size: 12px;
+            animation: none;
+            text-transform: uppercase;
+            background: linear-gradient(145deg, #E1BEE7, #F3E5F5);
+            color: #6A1B9A;
+        }
+        .menu-option:first-child {
+            margin-top: 0;
+        }
+        .menu-option:hover {
+            transform: scale(1.03);
+        }
+        .stars-layer {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .pixel-star {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #FFF9C4;
+            box-shadow:
+                0 0 0 2px rgba(255, 249, 196, 0.45),
+                0 0 10px rgba(255, 241, 118, 0.85);
+            animation: twinkle 2.4s ease-in-out infinite;
+        }
+        .pixel-star::before,
+        .pixel-star::after {
+            content: '';
+            position: absolute;
+            background: #FFF59D;
+        }
+        .pixel-star::before {
+            width: 4px;
+            height: 14px;
+            top: -2px;
+            left: 3px;
+        }
+        .pixel-star::after {
+            width: 14px;
+            height: 4px;
+            top: 3px;
+            left: -2px;
+        }
+        .profile-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(74, 20, 140, 0.25);
+            backdrop-filter: blur(3px);
+            z-index: 50;
+        }
+        .profile-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: min(84vw, 360px);
+            transform: translate(-50%, -50%);
+            background: linear-gradient(145deg, #F7E7FF, #EAD7F7);
+            border: 4px solid #6A1B9A;
+            border-radius: 24px;
+            padding: 20px 18px 18px;
+            box-shadow: 0 22px 42px rgba(106,27,154,0.26);
+            z-index: 60;
+        }
+        .profile-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .profile-info {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            text-align: left;
+            flex: 1;
+        }
+        .profile-photo {
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            border: 3px solid #6A1B9A;
+            object-fit: cover;
+            background: linear-gradient(145deg, #FFF59D, #F8BBD0);
+            box-shadow: 0 0 16px rgba(106,27,154,0.28);
+            flex-shrink: 0;
+        }
+        .profile-name {
+            color: #6A1B9A;
+            font-size: 12px;
+            line-height: 1.45;
+            word-break: break-word;
+            padding-top: 4px;
+        }
+        .profile-name span {
+            display: block;
+            font-size: 10px;
+            color: #8E24AA;
+            margin-bottom: 5px;
+            letter-spacing: 0.4px;
+        }
+        .close-profile-btn {
+            width: 38px;
+            height: 38px;
+            margin: 0;
+            padding: 0;
+            font-size: 14px;
+            line-height: 1;
+            animation: none;
+            background: linear-gradient(145deg, #FFCDD2, #F8BBD0);
+            color: #AD1457;
+            border-radius: 14px;
+        }
+        .profile-upload-label {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 11px 13px;
+            border: 3px solid #6A1B9A;
+            border-radius: 16px;
+            background: linear-gradient(145deg, #FFF59D, #FFE082);
+            color: #6A1B9A;
+            font-size: 10px;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(106,27,154,0.16);
+        }
+        .profile-upload-label:hover {
+            transform: scale(1.03);
+        }
+        .profile-note {
+            margin: 10px 0 0 0;
+            color: #8E24AA;
+            font-size: 9px;
+            line-height: 1.5;
+            text-align: left;
+        }
+        #profile-image-input {
+            display: none;
+        }
+        .admin-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: min(92vw, 560px);
+            max-height: 76vh;
+            overflow: auto;
+            background: linear-gradient(145deg, #fff8fe, #eeddfa);
+            border: 4px solid #6A1B9A;
+            border-radius: 26px;
+            padding: 20px 18px;
+            box-shadow: 0 24px 44px rgba(106, 27, 154, 0.26);
+            z-index: 90;
+        }
+        .admin-popup-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .admin-popup h3 {
+            margin: 0;
+            color: #8E24AA;
+            font-size: 15px;
+        }
+        .admin-note {
+            margin: 8px 0 0 0;
+            color: #6A1B9A;
+            font-size: 9px;
+            line-height: 1.5;
+        }
+        .admin-status {
+            margin: 10px 0 0 0;
+            color: #8E24AA;
+            font-size: 8px;
+            line-height: 1.5;
+            padding: 8px 10px;
+            border-radius: 12px;
+            border: 2px dashed rgba(142, 36, 170, 0.28);
+            background: rgba(255, 255, 255, 0.55);
+        }
+        .admin-login {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 14px;
+        }
+        #admin-secret {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            border: 3px solid #BA68C8;
+            border-radius: 14px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            color: #6A1B9A;
+            background: rgba(255,255,255,0.88);
+        }
+        .admin-action-btn {
+            width: 100%;
+            margin: 0;
+            padding: 14px 12px;
+            font-size: 11px;
+            animation: none;
+        }
+        .admin-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 14px;
+        }
+        .admin-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px;
+            border-radius: 16px;
+            border: 2px solid #D1A7EB;
+            background: rgba(255,255,255,0.82);
+        }
+        .admin-row-info {
+            text-align: left;
+            color: #6A1B9A;
+            font-size: 9px;
+            line-height: 1.6;
+        }
+        .admin-row-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        .admin-mini-btn {
+            width: auto;
+            min-width: 80px;
+            margin: 0;
+            padding: 10px 10px;
+            font-size: 8px;
+            animation: none;
+        }
+        .ban-btn {
+            background: linear-gradient(145deg, #FFE082, #FFCA28);
+            color: #6A1B9A;
+        }
+        .delete-btn {
+            background: linear-gradient(145deg, #FFCDD2, #F8BBD0);
+            color: #AD1457;
+        }
+        .choice-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(106, 27, 154, 0.2);
+            backdrop-filter: blur(3px);
+            z-index: 70;
+        }
+        .choice-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: min(88vw, 500px);
+            background: linear-gradient(145deg, #FFF4FE, #EED8FA);
+            border: 4px solid #6A1B9A;
+            border-radius: 24px;
+            padding: 20px 16px 18px;
+            box-shadow: 0 20px 38px rgba(106, 27, 154, 0.24);
+            text-align: center;
+            z-index: 80;
+        }
+        .choice-popup h3 {
+            margin: 0;
+            color: #8E24AA;
+            font-size: 16px;
+            text-shadow: 2px 2px 0 rgba(255,255,255,0.9);
+        }
+        .choice-popup p {
+            margin: 12px 0 0 0;
+            color: #6A1B9A;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+        .choice-popup-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .choice-popup-header-text {
+            flex: 1;
+            text-align: center;
+            padding-left: 28px;
+        }
+        .choice-popup-close {
+            width: 36px;
+            height: 36px;
+            margin: 0;
+            padding: 0;
+            font-size: 14px;
+            line-height: 1;
+            border-radius: 12px;
+            animation: none;
+            background: linear-gradient(145deg, #FFCDD2, #F8BBD0);
+            color: #AD1457;
+        }
+        .choice-grid {
+            margin-top: 14px;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px 12px;
+        }
+        .choice-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        .choice-circle {
+            width: 96px;
+            height: 96px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 28%, #ffffff 0%, #fdeeff 46%, #efd5fb 100%);
+            border: 3px solid #C88AE8;
+            box-shadow:
+                0 10px 20px rgba(106, 27, 154, 0.14),
+                inset 0 0 12px rgba(255,255,255,0.92);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        button.choice-circle {
+            width: 96px;
+            margin: 0;
+            padding: 0;
+            animation: none;
+        }
+        .choice-circle img {
+            width: 84%;
+            height: 84%;
+            object-fit: cover;
+            transform: scale(1.22);
+            image-rendering: auto;
+        }
+        .choice-label {
+            color: #7B1FA2;
+            font-size: 9px;
+            line-height: 1.35;
+            text-align: center;
+            max-width: 104px;
+            min-height: 24px;
+        }
+        @media (max-width: 520px) {
+            .choice-popup {
+                width: min(94vw, 360px);
+                padding: 18px 14px 18px;
+            }
+            .choice-grid {
+                gap: 12px 8px;
+            }
+            .choice-circle {
+                width: 88px;
+                height: 88px;
+            }
+            .choice-label {
+                max-width: 88px;
+                font-size: 8px;
+            }
+        }
+        #timer-page {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 28px 18px;
+            box-sizing: border-box;
+            background: linear-gradient(180deg, rgba(255,248,254,0.96), rgba(240,224,251,0.96));
+        }
+        #timer-page.is-active {
+            display: flex !important;
+        }
+        .timer-title {
+            color: #8E24AA;
+            font-size: 22px;
+            margin: 0 0 18px 0;
+            text-shadow: 2px 2px 0 rgba(255,255,255,0.9);
+        }
+        .timer-header {
+            width: min(92vw, 720px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .timer-sound-btn {
+            width: 58px;
+            height: 58px;
+            margin: 0;
+            padding: 0;
+            border-radius: 18px;
+            border: 3px solid #D39BF0;
+            background: linear-gradient(145deg, rgba(255,255,255,0.95), rgba(244,225,251,0.96));
+            box-shadow: 0 10px 22px rgba(106, 27, 154, 0.14);
+            animation: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .timer-sound-btn img {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            display: block;
+        }
+        .timer-sound-btn:hover {
+            transform: scale(1.04);
+        }
+        .timer-panel {
+            width: min(92vw, 720px);
+            background: linear-gradient(145deg, #fff7ff, #eddcf9);
+            border: 4px solid #6A1B9A;
+            border-radius: 30px;
+            padding: 28px 20px 24px;
+            box-shadow: 0 20px 38px rgba(106, 27, 154, 0.18);
+        }
+        .timer-display {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            align-items: start;
+        }
+        .timer-unit {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+        .timer-card {
+            width: min(26vw, 180px);
+            height: min(30vw, 200px);
+            min-width: 104px;
+            min-height: 128px;
+            border-radius: 24px;
+            border: 4px solid #B57DD8;
+            background: linear-gradient(180deg, #fffafd 0%, #f0dffa 100%);
+            box-shadow: 0 16px 26px rgba(106, 27, 154, 0.16), inset 0 0 18px rgba(255,255,255,0.95);
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background:
+                radial-gradient(circle at 30% 22%, rgba(255,255,255,0.92), transparent 42%),
+                linear-gradient(180deg, rgba(255,255,255,0.96), rgba(238,220,250,0.98));
+        }
+        .timer-value {
+            font-size: clamp(34px, 7vw, 68px);
+            color: #7B1FA2;
+            text-shadow: 0 4px 0 rgba(255,255,255,0.8);
+        }
+        .timer-card.is-changing .timer-value {
+            animation: timerPulse 0.28s ease;
+        }
+        .timer-unit-label {
+            color: #8E24AA;
+            font-size: 10px;
+            letter-spacing: 1px;
+        }
+        .timer-note {
+            margin: 18px 0 0 0;
+            color: #6A1B9A;
+            font-size: 9px;
+            line-height: 1.6;
+            text-align: center;
+        }
+        .timer-controls {
+            margin-top: 18px;
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .timer-control-btn {
+            width: auto;
+            min-width: 140px;
+            margin: 0;
+            padding: 14px 18px;
+            font-size: 11px;
+        }
+        @keyframes timerPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
+        @media (max-width: 560px) {
+            .timer-display {
+                gap: 10px;
+            }
+            .timer-card {
+                width: min(28vw, 120px);
+                height: min(34vw, 150px);
+                min-width: 84px;
+                min-height: 108px;
+            }
+            .timer-controls {
+                gap: 8px;
+            }
+            .timer-control-btn {
+                min-width: 120px;
+                font-size: 9px;
+            }
+        }
+        #todo-page {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 38px 18px 90px;
+            box-sizing: border-box;
+            background: linear-gradient(180deg, rgba(255, 248, 254, 0.96), rgba(239, 229, 249, 0.98));
+        }
+        #todo-page.is-active {
+            display: flex !important;
+        }
+        .todo-title {
+            margin: 10px 0 18px 0;
+            color: #8E24AA;
+            font-size: 22px;
+            text-shadow: 2px 2px 0 rgba(255,255,255,0.9);
+        }
+        .todo-panel {
+            width: min(92vw, 760px);
+            min-height: 420px;
+            background: linear-gradient(145deg, #fffaff, #eee0f8);
+            border: 4px solid #6A1B9A;
+            border-radius: 28px;
+            padding: 22px 18px;
+            box-shadow: 0 18px 36px rgba(106, 27, 154, 0.16);
+        }
+        .todo-subtitle {
+            margin: 0 0 14px 0;
+            color: #6A1B9A;
+            font-size: 10px;
+            line-height: 1.5;
+        }
+        .todo-history {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .todo-entry {
+            padding: 12px 14px;
+            border-radius: 16px;
+            border: 2px solid #d7b3ee;
+            background: rgba(255,255,255,0.82);
+            color: #7B1FA2;
+            font-size: 10px;
+            line-height: 1.6;
+            text-align: left;
+        }
+        .todo-empty {
+            padding: 18px 14px;
+            border-radius: 18px;
+            border: 2px dashed #d7b3ee;
+            color: #8E24AA;
+            font-size: 10px;
+            line-height: 1.6;
+            text-align: center;
+            background: rgba(255,255,255,0.6);
+        }
+        .todo-add-btn {
+            position: fixed;
+            right: 24px;
+            bottom: 38px;
+            width: 92px;
+            height: 92px;
+            margin: 0;
+            padding: 0;
+            border: none;
+            background: transparent;
+            box-shadow: none;
+            animation: bounce 1.7s ease-in-out infinite, glow 1.6s ease-in-out infinite;
+            z-index: 30;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 54px;
+            font-weight: 900;
+            color: white;
+            line-height: 1;
+            text-shadow:
+                0 0 10px rgba(255,255,255,0.95),
+                0 0 20px rgba(220, 163, 246, 0.95),
+                0 8px 18px rgba(106, 27, 154, 0.2);
+        }
+        .todo-add-btn:hover {
+            transform: scale(1.05);
+        }
+        #todo-entry-page {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 38px 18px 32px;
+            box-sizing: border-box;
+            background: linear-gradient(180deg, rgba(255, 248, 254, 0.96), rgba(239, 229, 249, 0.98));
+        }
+        #todo-entry-page.is-active {
+            display: flex !important;
+        }
+        .todo-entry-panel {
+            width: min(92vw, 760px);
+            min-height: 480px;
+            background: linear-gradient(145deg, #fffaff, #eee0f8);
+            border: 4px solid #6A1B9A;
+            border-radius: 28px;
+            padding: 22px 18px;
+            box-shadow: 0 18px 36px rgba(106, 27, 154, 0.16);
+        }
+        .todo-entry-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .todo-date,
+        .todo-day {
+            color: #7B1FA2;
+            font-size: 13px;
+            font-weight: 900;
+            text-shadow: 2px 2px 0 rgba(255,255,255,0.85);
+        }
+        .todo-day {
+            text-align: right;
+        }
+        .todo-input-box {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 16px 18px;
+            border-radius: 18px;
+            border: 3px solid #C88AE8;
+            background: rgba(255,255,255,0.9);
+            color: #6A1B9A;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+        .todo-input-box::placeholder {
+            color: #b68ad6;
+        }
+        .todo-entry-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 18px;
+        }
+        .todo-check-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 14px;
+            border-radius: 16px;
+            border: 2px solid #d7b3ee;
+            background: rgba(255,255,255,0.82);
+            color: #7B1FA2;
+            font-size: 10px;
+            line-height: 1.6;
+            text-align: left;
+        }
+        .todo-check-row input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #BA68C8;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+        #diary-home-page,
+        #diary-page,
+        #photo-memory-home-page,
+        #photo-memory-page {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 26px 18px 18px;
+        }
+        #diary-home-page.is-active,
+        #diary-page.is-active,
+        #photo-memory-home-page.is-active,
+        #photo-memory-page.is-active {
+            display: flex !important;
+        }
+        .diary-title,
+        .memory-title {
+            margin: 6px 0 14px 0;
+            color: #8E24AA;
+            font-size: 20px;
+            text-shadow: 2px 2px 0 rgba(255,255,255,0.9);
+            text-align: center;
+        }
+        .diary-home-panel,
+        .diary-editor-panel,
+        .memory-home-panel,
+        .memory-page-shell {
+            width: min(92vw, 920px);
+            margin: 0 auto;
+            border-radius: 24px;
+            border: 3px solid #6A1B9A;
+            background: linear-gradient(145deg, #fff8ff, #ecdff8);
+            box-shadow: 0 14px 28px rgba(106, 27, 154, 0.12);
+            padding: 18px 16px;
+        }
+        .diary-editor-panel {
+            background:
+                linear-gradient(rgba(255,255,255,0.78), rgba(255,255,255,0.78)),
+                repeating-linear-gradient(
+                    to bottom,
+                    transparent 0,
+                    transparent 34px,
+                    rgba(106, 27, 154, 0.10) 34px,
+                    rgba(106, 27, 154, 0.10) 35px
+                ),
+                linear-gradient(145deg, #fff8ff, #ecdff8);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .diary-home-top,
+        .memory-home-top {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .diary-home-note,
+        .memory-home-note {
+            margin: 0;
+            color: #6A1B9A;
+            font-size: 8px;
+            line-height: 1.55;
+            max-width: 560px;
+        }
+        .diary-new-btn,
+        .memory-new-btn,
+        .diary-search-btn,
+        .diary-done-btn,
+        .memory-toolbar-btn,
+        .confirm-yes,
+        .confirm-no {
+            width: auto;
+            margin: 0;
+            padding: 12px 16px;
+            font-size: 9px;
+            animation: none;
+        }
+        .diary-new-btn,
+        .memory-new-btn {
+            background: linear-gradient(145deg, #FFD54F, #FFCA28);
+            color: #6A1B9A;
+        }
+        .diary-search-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto auto;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .diary-search-input,
+        .memory-title-input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 14px 16px;
+            border-radius: 16px;
+            border: 3px solid #C88AE8;
+            background: rgba(255,255,255,0.9);
+            color: #6A1B9A;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 9px;
+        }
+        .diary-history,
+        .memory-home-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        .diary-history-card,
+        .memory-home-card {
+            position: relative;
+            min-height: 88px;
+            padding: 16px 14px 12px;
+            border-radius: 16px;
+            border: 2px solid #D7B3EE;
+            background: rgba(255,255,255,0.86);
+            text-align: left;
+            color: #7B1FA2;
+            font-size: 9px;
+            line-height: 1.5;
+            box-shadow: 0 6px 14px rgba(106, 27, 154, 0.07);
+            cursor: pointer;
+        }
+        .diary-history-card {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .diary-history-label,
+        .memory-home-card-title {
+            color: #8E24AA;
+            font-size: 9px;
+            line-height: 1.45;
+        }
+        .diary-history-day,
+        .memory-home-card-meta {
+            color: #6A1B9A;
+            font-size: 7px;
+            line-height: 1.5;
+        }
+        .diary-history-delete,
+        .memory-history-delete,
+        .memory-page-delete-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: auto;
+            min-width: 38px;
+            padding: 7px 9px;
+            font-size: 8px;
+            border-radius: 10px;
+            animation: none;
+            background: linear-gradient(145deg, #FFCDD2, #F8BBD0);
+            color: #AD1457;
+        }
+        .diary-editor-head,
+        .memory-page-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: flex-start;
+            margin-bottom: 14px;
+        }
+        .diary-date,
+        .diary-day,
+        .memory-page-head .memory-title {
+            color: #7B1FA2;
+            font-size: 10px;
+            line-height: 1.5;
+            text-shadow: 1px 1px 0 rgba(255,255,255,0.85);
+        }
+        .diary-day--strong {
+            text-align: right;
+            font-weight: 900;
+        }
+        .diary-textarea {
+            width: 100%;
+            min-height: 420px;
+            box-sizing: border-box;
+            padding: 20px 18px;
+            border-radius: 18px;
+            border: 3px solid #C88AE8;
+            background:
+                linear-gradient(rgba(255,255,255,0.64), rgba(255,255,255,0.64)),
+                repeating-linear-gradient(
+                    to bottom,
+                    transparent 0,
+                    transparent 34px,
+                    rgba(106, 27, 154, 0.20) 34px,
+                    rgba(106, 27, 154, 0.20) 35px
+                );
+            color: #6A1B9A;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            line-height: 35px;
+            resize: vertical;
+            outline: none;
+        }
+        .diary-editor-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 0;
+        }
+        .diary-done-btn {
+            background: linear-gradient(145deg, #BA68C8, #9C27B0);
+            color: #fff;
+            min-width: 120px;
+        }
+        .confirm-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: min(88vw, 340px);
+            padding: 18px 16px;
+            border-radius: 20px;
+            border: 3px solid #6A1B9A;
+            background: linear-gradient(145deg, #fff8ff, #eeddfa);
+            box-shadow: 0 16px 30px rgba(106, 27, 154, 0.2);
+            text-align: center;
+            z-index: 95;
+        }
+        .confirm-popup h3 {
+            margin: 0;
+            color: #8E24AA;
+            font-size: 12px;
+        }
+        .confirm-popup p {
+            margin: 12px 0 0 0;
+            color: #6A1B9A;
+            font-size: 8px;
+            line-height: 1.6;
+        }
+        .confirm-actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .confirm-yes {
+            background: linear-gradient(145deg, #C8E6C9, #A5D6A7);
+            color: #1B5E20;
+        }
+        .confirm-no {
+            background: linear-gradient(145deg, #FFCDD2, #F8BBD0);
+            color: #AD1457;
+        }
+        .memory-page-shell {
+            width: min(94vw, 1100px);
+        }
+        .memory-page-head {
+            align-items: center;
+            margin-bottom: 14px;
+        }
+        .memory-title-input {
+            max-width: 280px;
+        }
+        .memory-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .memory-toolbar-btn {
+            min-width: 118px;
+            background: linear-gradient(145deg, #E1BEE7, #F3E5F5);
+            color: #6A1B9A;
+        }
+        .memory-toolbar-spacer {
+            flex: 1;
+        }
+        .memory-workspace {
+            display: block;
+        }
+        .photo-memory-board {
+            position: relative;
+            min-height: 560px;
+            border-radius: 22px;
+            border: 2px dashed #D7B3EE;
+            background:
+                linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)),
+                repeating-linear-gradient(to right, rgba(106,27,154,0.09) 0, rgba(106,27,154,0.09) 1px, transparent 1px, transparent 30px),
+                repeating-linear-gradient(to bottom, rgba(106,27,154,0.09) 0, rgba(106,27,154,0.09) 1px, transparent 1px, transparent 30px);
+            overflow: hidden;
+        }
+        .memory-board-item {
+            position: absolute;
+            touch-action: none;
+            user-select: none;
+            cursor: grab;
+        }
+        .memory-board-item.is-selected {
+            outline: 3px dashed #8E24AA;
+            outline-offset: 4px;
+        }
+        .memory-board-item img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: contain;
+            pointer-events: none;
+            image-rendering: auto;
+        }
+        .memory-board-item.is-photo {
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 10px 22px rgba(106,27,154,0.12);
+            background: rgba(255,255,255,0.86);
+            border: 3px solid #D7B3EE;
+        }
+        .memory-resize-handle {
+            position: absolute;
+            right: -8px;
+            bottom: -8px;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 3px solid #6A1B9A;
+            background: #FFF59D;
+            cursor: se-resize;
+        }
+        @media (max-width: 900px) {
+            .memory-workspace {
+                display: block;
+            }
+        }
+
+        /* Login Page Styles */
+        #main-page {
+            transition: opacity 0.3s ease;
+        }
+        #login-page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(240, 229, 245, 0.95);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #login-page h2 {
+            color: #6A1B9A;
+            font-size: 22px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+            margin-bottom: 30px;
+        }
+        #create-account-page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(240, 229, 245, 0.95);
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #create-account-page h2 {
+            color: #6A1B9A;
+            font-size: 22px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+            margin-bottom: 30px;
+        }
+        .login-box {
+            background: linear-gradient(145deg, #D1C4E9, #E1BEE7);
+            border: 4px solid #6A1B9A;
+            border-radius: 30px;
+            padding: 35px 25px;
+            width: 280px;
+            text-align: center;
+            box-shadow: 8px 8px 16px rgba(0,0,0,0.2), inset 0 0 12px rgba(255,255,255,0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+        #username, #password, #new-username, #new-password, #confirm-password {
+            display: block;
+            width: 85%;
+            margin: 18px auto;
+            padding: 14px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 13px;
+            border: 3px solid #BA68C8;
+            border-radius: 15px;
+            background: rgba(255,255,255,0.8);
+            color: #4A148C;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        #username:focus, #password:focus, #new-username:focus, #new-password:focus, #confirm-password:focus {
+            border-color: #6A1B9A;
+            box-shadow: 0 0 15px rgba(106,27,154,0.6);
+            transform: scale(1.02);
+            background: white;
+        }
+        #done-btn, #create-done-btn {
+            width: 100%;
+            margin-top: 20px;
+            padding: 16px;
+            background: linear-gradient(145deg, #BA68C8, #9C27B0);
+            color: white;
+            border: 3px solid #6A1B9A;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            animation: bounce 1.2s infinite;
+        }
+        #done-btn:hover, #create-done-btn:hover {
+            transform: scale(1.04);
+            box-shadow: 0 4px 12px rgba(106,27,154,0.4);
+        }
+        .back-btn {
+            position: fixed !important;
+            top: 78px;
+            left: 16px;
+            right: auto;
+            min-width: 0;
+            width: auto;
+            background: linear-gradient(145deg, rgba(200, 230, 201, 0.92), rgba(165, 214, 167, 0.92));
+            color: #1B5E20;
+            border: 2px solid #2E7D32;
+            font-size: 10px;
+            padding: 7px 10px;
+            border-radius: 999px;
+            font-family: 'Press Start 2P', cursive;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 20;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+            opacity: 0.92;
+        }
+        .back-btn:hover {
+            background: linear-gradient(145deg, #2E7D32, #1B5E20);
+            color: white;
+            transform: scale(1.03);
+            animation: glow 0.4s;
+            box-shadow: 0 8px 18px rgba(0,0,0,0.16);
+        }
+
+        /* Mobile responsive */
+        @media (max-width: 480px) {
+            .back-btn {
+                top: 68px;
+                left: 12px;
+                right: auto;
+                font-size: 9px;
+                padding: 6px 8px;
+            }
+        }
+        @keyframes successPulse {
+            0% {
+                transform: translate(-50%, -50%) scale(0.3);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.15);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+        #success-popup.show {
+            display: block !important;
+            animation: successPulse 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            box-shadow: 0 0 40px rgba(255,105,180,0.8);
+        }
+        #success-popup img {
+            animation: bounce 0.6s infinite;
+        }
+        #success-popup p {
+            font-size: 13px;
+            margin: 10px 0 0 0;
+            animation: glow 1.5s infinite alternate;
+        }
+
+        /* Error Popup Styles */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        @keyframes errorFade {
+            0% { opacity: 0; transform: scale(0.8); }
+            20% { opacity: 1; transform: scale(1); }
+            80% { opacity: 1; transform: scale(1); }
+            100% { opacity: 0; transform: scale(0.8); }
+        }
+        #error-popup.show {
+            display: block;
+            animation: shake 0.5s ease-in-out, errorFade 3.5s ease-in-out forwards;
+        }
+        #login-page.is-active {
+            display: flex !important;
+        }
+        .back-btn.is-active {
+            display: inline-block !important;
+        }
+        #create-account-page.is-active {
+            display: flex !important;
+        }
+        #welcome-page.is-active {
+            display: flex !important;
+        }
+        #error-popup {
+            right: 30px;
+            left: auto;
+            transform: none;
+        }
+        @media (max-width: 480px) {
+            #error-popup {
+                right: 20px;
+            }
+        }
+        #error-msg {
+            margin: 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            font-size: 11px;
+            line-height: 1.2;
+        }
+    </style>
+
+
+</head>
+<body class="app-loading">
+    <div id="splash-screen" class="splash-screen">
+        <div class="splash-card">
+            <div id="splash-text" class="splash-title"></div>
+            <p class="splash-subtitle">loading your little Mochimelo world...</p>
+        </div>
+    </div>
+    <audio id="bgm-audio" src="bgm_cute_playful.mp4" loop preload="auto" playsinline></audio>
+    <div class="header-container">
+        <span class="header-text">MOCHIMELO</span>
+        <img src="pixel_heart_transparent.png" alt="Pixel Heart" style="width: 24px; height: 24px; image-rendering: pixelated;">
+    </div>
+    <div class="music-wrap">
+        <button id="music-toggle-btn" class="music-btn" onclick="toggleBackgroundMusic()" aria-label="Toggle background music">♪ ON</button>
+    </div>
+        <div class="container">
+<button class="back-btn is-hidden" onclick="handleBack()">← Back</button>
+        <div id="main-page">
+            <button class="login-btn" onclick="showLoginPage()">Login</button>
+            <button class="create-btn" onclick="handleCreateAccount()">Create Account</button>
+        </div>
+        <div id="login-page" class="is-hidden">
+            <h2>Login</h2>
+            <div class="login-box">
+                <input type="text" id="username" placeholder="Username" autocomplete="off" autocapitalize="off" spellcheck="false" />
+                <input type="password" id="password" placeholder="Password" autocomplete="off" autocapitalize="off" spellcheck="false" />
+                <button id="done-btn" onclick="handleDone()">Done</button>
+            </div>
+        </div>
+        <div id="create-account-page" class="is-hidden">
+            <h2>CREATING ACCOUNT</h2>
+            <div class="login-box">
+                <input type="text" id="new-username" placeholder="Username" autocomplete="off" autocapitalize="off" spellcheck="false" />
+                <input type="password" id="new-password" placeholder="Password" autocomplete="new-password" autocapitalize="off" spellcheck="false" />
+                <input type="password" id="confirm-password" placeholder="Confirm Password" autocomplete="new-password" autocapitalize="off" spellcheck="false" />
+                <button id="create-done-btn" onclick="handleCreateDone()">Done</button>
+            </div>
+        </div>
+        <div id="welcome-page" class="is-hidden">
+            <h2 class="welcome-title">
+                <span id="welcome-text" class="welcome-title-text typing-cursor"></span>
+                <img class="welcome-heart" src="pixel_heart_transparent_ui.png" alt="Pixel heart">
+            </h2>
+            <div class="settings-wrap">
+                <button class="settings-btn" onclick="toggleSettingsMenu(event)" aria-label="Open settings"></button>
+                <div id="settings-menu" class="settings-menu is-hidden">
+                    <button class="menu-option" onclick="openProfilePopup(event)">Profile</button>
+                    <button class="menu-option" onclick="logoutUser(event)">Logout</button>
+                </div>
+            </div>
+            <div id="stars-layer" class="stars-layer"></div>
+            <div class="welcome-center">
+                <img class="welcome-molang" src="molang_transparent.png" alt="Cute Molang asking to start">
+                <button class="start-btn" onclick="handleStart()">LET'S START</button>
+            </div>
+        </div>
+        <div id="timer-page" class="is-hidden">
+            <div class="timer-header">
+                <h2 class="timer-title">TIMER</h2>
+                <button id="timer-sound-btn" class="timer-sound-btn" onclick="toggleTimerSound()" aria-label="Toggle timer sound">
+                    <img id="timer-sound-icon" src="sound_on.png" alt="Sound on">
+                </button>
+            </div>
+            <div class="timer-panel">
+                <div class="timer-display">
+                    <div class="timer-unit">
+                        <div id="timer-hours-card" class="timer-card">
+                            <div class="timer-value">00</div>
+                        </div>
+                        <div class="timer-unit-label">HOURS</div>
+                    </div>
+                    <div class="timer-unit">
+                        <div id="timer-minutes-card" class="timer-card">
+                            <div class="timer-value">00</div>
+                        </div>
+                        <div class="timer-unit-label">MINUTES</div>
+                    </div>
+                    <div class="timer-unit">
+                        <div id="timer-seconds-card" class="timer-card">
+                            <div class="timer-value">00</div>
+                        </div>
+                        <div class="timer-unit-label">SECONDS</div>
+                    </div>
+                </div>
+                <p id="timer-note" class="timer-note">Type 6 number keys for HHMMSS. Use Backspace to erase. Press Enter to start or pause.</p>
+                <div class="timer-controls">
+                    <button class="timer-control-btn login-btn" onclick="toggleTimerRun()">START / PAUSE</button>
+                    <button class="timer-control-btn create-btn" onclick="resetTimer()">RESET</button>
+                </div>
+            </div>
+        </div>
+        <div id="todo-page" class="is-hidden">
+            <h2 class="todo-title">TO-DO</h2>
+            <div class="todo-panel">
+                <p class="todo-subtitle">Your history stays here so you can look back at everything you added.</p>
+                <div id="todo-history" class="todo-history"></div>
+            </div>
+            <button class="todo-add-btn" onclick="openTodoEntryPage()" aria-label="Add a new to-do item">+</button>
+        </div>
+        <div id="todo-entry-page" class="is-hidden">
+            <h2 class="todo-title">TO-DO</h2>
+            <div class="todo-entry-panel">
+                <div class="todo-entry-head">
+                    <div id="todo-date" class="todo-date"></div>
+                    <div id="todo-day" class="todo-day"></div>
+                </div>
+                <input id="todo-entry-input" class="todo-input-box" type="text" placeholder="Write your task here and press Enter">
+                <div id="todo-entry-list" class="todo-entry-list"></div>
+            </div>
+        </div>
+        <div id="diary-home-page" class="is-hidden">
+            <h2 class="diary-title">DIARY</h2>
+            <div class="diary-home-panel">
+                <div class="diary-home-top">
+                    <p class="diary-home-note">Your pages are saved by day, and you can search them by word or date.</p>
+                    <button class="diary-new-btn" onclick="openDiaryEntryPage()">WRITE TODAY</button>
+                </div>
+                <div class="diary-search-row">
+                    <input id="diary-search-input" class="diary-search-input" type="text" placeholder="Search by word or date">
+                    <button class="diary-search-btn" onclick="renderDiaryHomePage()">SEARCH</button>
+                    <button class="diary-search-btn diary-clear-btn" onclick="clearDiarySearch()">CLEAR</button>
+                </div>
+                <div id="diary-history" class="diary-history"></div>
+            </div>
+        </div>
+        <div id="diary-page" class="is-hidden">
+            <h2 class="diary-title">DIARY</h2>
+            <div class="diary-editor-panel">
+                <div class="diary-editor-head">
+                    <div id="diary-date" class="diary-date"></div>
+                    <div id="diary-day" class="diary-day diary-day--strong"></div>
+                </div>
+                <textarea id="diary-textarea" class="diary-textarea" placeholder="Write your diary here..."></textarea>
+                <div class="diary-editor-actions">
+                    <button class="diary-done-btn" onclick="saveDiaryEntry()">DONE</button>
+                </div>
+            </div>
+        </div>
+        <div id="photo-memory-home-page" class="is-hidden">
+            <h2 class="memory-title">MY PHOTO MEMORY</h2>
+            <div class="memory-home-panel">
+                <div class="memory-home-top">
+                    <p class="memory-home-note">Create little pages, name them, and fill them with your photos.</p>
+                    <button class="memory-new-btn" onclick="openPhotoMemoryEntryPage()">NEW MEMORY PAGE</button>
+                </div>
+                <div id="memory-home-list" class="memory-home-list"></div>
+            </div>
+        </div>
+        <div id="photo-memory-page" class="is-hidden">
+            <div class="memory-page-shell">
+                <div class="memory-page-head">
+                    <h2 class="memory-title">PHOTO MEMORY PAGE</h2>
+                    <input id="photo-memory-title-input" class="memory-title-input" type="text" placeholder="Page title">
+                </div>
+                <div class="memory-toolbar">
+                    <button class="memory-toolbar-btn" onclick="triggerPhotoMemoryUpload()">ADD PHOTO</button>
+                    <button class="memory-toolbar-btn memory-del-btn" onclick="deleteSelectedPhotoMemoryItem()">DEL</button>
+                    <button class="memory-toolbar-btn memory-page-delete-btn" onclick="requestDeletePhotoMemoryPage()">DELETE PAGE</button>
+                    <div class="memory-toolbar-spacer"></div>
+                    <button class="memory-toolbar-btn memory-done-btn" onclick="closePhotoMemoryPage()">DONE</button>
+                </div>
+                <div class="memory-workspace">
+                    <div id="photo-memory-board" class="photo-memory-board"></div>
+                </div>
+                <input id="photo-memory-file-input" type="file" accept="image/*" multiple class="is-hidden">
+            </div>
+        </div>
+        <div id="diary-confirm-overlay" class="profile-overlay is-hidden" onclick="cancelDeleteDiaryEntry()"></div>
+        <div id="diary-confirm-popup" class="confirm-popup is-hidden">
+            <h3>Delete diary page?</h3>
+            <p>Are you sure you want to delete this page?</p>
+            <div class="confirm-actions">
+                <button class="confirm-yes" onclick="confirmDeleteDiaryEntry()">YES</button>
+                <button class="confirm-no" onclick="cancelDeleteDiaryEntry()">CANCEL</button>
+            </div>
+        </div>
+        <div id="photo-memory-confirm-overlay" class="profile-overlay is-hidden" onclick="cancelDeletePhotoMemoryPage()"></div>
+        <div id="photo-memory-confirm-popup" class="confirm-popup is-hidden">
+            <h3>Delete page?</h3>
+            <p>Are you sure you want to delete this memory page?</p>
+            <div class="confirm-actions">
+                <button class="confirm-yes" onclick="confirmDeletePhotoMemoryPage()">YES</button>
+                <button class="confirm-no" onclick="cancelDeletePhotoMemoryPage()">CANCEL</button>
+            </div>
+        </div>
+        <div id="profile-overlay" class="profile-overlay is-hidden" onclick="closeProfilePopup()"></div>
+        <div id="profile-popup" class="profile-popup is-hidden">
+            <div class="profile-header">
+                <div class="profile-info">
+                    <img id="profile-photo-preview" class="profile-photo" src="pixel_heart_transparent.png" alt="Profile photo">
+                    <div class="profile-name">
+                        <span>MY PROFILE</span>
+                        <strong id="profile-username">friend</strong>
+                    </div>
+                </div>
+                <button class="close-profile-btn" onclick="closeProfilePopup()" aria-label="Close profile">X</button>
+            </div>
+            <label class="profile-upload-label" for="profile-image-input">Choose Profile Photo</label>
+            <p class="profile-note">Tap the button above to add your photo from this device.</p>
+            <input id="profile-image-input" type="file" accept="image/*">
+        </div>
+        <div id="admin-overlay" class="profile-overlay is-hidden" onclick="closeAdminPopup()"></div>
+        <div id="admin-popup" class="admin-popup is-hidden">
+            <div class="admin-popup-header">
+                <div>
+                    <h3>Owner Admin</h3>
+                    <p class="admin-note">Hidden owner-only control. Use this to ban or remove users.</p>
+                    <div id="admin-status" class="admin-status">Status: Locked</div>
+                </div>
+                <button class="close-profile-btn" onclick="closeAdminPopup()" aria-label="Close owner admin">X</button>
+            </div>
+            <div id="admin-login-panel" class="admin-login">
+                <input id="admin-secret" type="password" placeholder="Owner password" autocomplete="off" autocapitalize="off" spellcheck="false">
+                <button class="admin-action-btn login-btn" onclick="submitAdminLogin()">Unlock</button>
+            </div>
+            <div id="admin-users-panel" class="is-hidden">
+                <p class="admin-note">This panel is hidden from normal users. Shortcut: Ctrl + Shift + M</p>
+                <div id="admin-user-list" class="admin-list"></div>
+            </div>
+        </div>
+        <div id="choice-overlay" class="choice-overlay is-hidden" onclick="closeChoicePopup()"></div>
+        <div id="choice-popup" class="choice-popup is-hidden">
+            <div class="choice-popup-header">
+                <div class="choice-popup-header-text">
+                    <h3>Choose me!</h3>
+                    <p>Your next little adventure starts here.</p>
+                </div>
+                <button class="choice-popup-close" onclick="closeChoicePopup()" aria-label="Close choice popup">X</button>
+            </div>
+            <div class="choice-grid">
+                <div class="choice-item">
+                    <button class="choice-circle" onclick="openDiaryHomePage()" aria-label="Open Diary">
+                        <img src="item_diary.png" alt="Diary">
+                    </button>
+                    <div class="choice-label">Diary</div>
+                </div>
+                <div class="choice-item">
+                    <button class="choice-circle" onclick="openPhotoMemoryHomePage()" aria-label="Open My Photo Memory">
+                        <img src="item_yummy.png" alt="My Photo Memory">
+                    </button>
+                    <div class="choice-label">My Photo Memory</div>
+                </div>
+            </div>
+        </div>
+        <div id="success-popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: linear-gradient(145deg, #F3E5F5, #E1BEE7); border: 3px solid #6A1B9A; border-radius: 15px; padding: 20px; text-align: center; box-shadow: 0 0 20px rgba(106,27,154,0.5); z-index: 1000;">
+            <img src="pixel_heart_transparent.png" alt="Heart" style="width: 32px; height: 32px; image-rendering: pixelated;">
+            <p>Logged in successfully! 💖</p>
+        </div>
+        <div id="error-popup" style="display: none; position: fixed; bottom: 30px; right: 30px; background: linear-gradient(145deg, #FFCDD2, #F8BBD9); border: 3px solid #E91E63; border-radius: 20px; padding: 15px 25px; text-align: center; box-shadow: 0 4px 12px rgba(233,30,99,0.4); z-index: 1001; max-width: 300px; font-family: 'Press Start 2P', cursive; color: #C2185B; font-size: 12px;">
+            <p id="error-msg"></p>
+        </div>
+    </div>
+
+
+    <script>
+        let errorPopupTimeout;
+        let successPopupTimeout;
+        let typingTimeout;
+        let splashTypingTimeout;
+        let splashFadeTimeout;
+        let accountsCache = [];
+        let adminToken = '';
+        let currentScreen = 'main';
+        let timerDigits = ['0', '0', '0', '0', '0', '0'];
+        let timerTotalSeconds = 0;
+        let timerInterval = null;
+        let audioContext = null;
+        let timerLoopInterval = null;
+        let timerSoundMuted = false;
+        let backgroundMusicStarted = false;
+        let backgroundMusicMuted = localStorage.getItem('bgmMuted') === '1';
+        let currentDiaryPageId = '';
+        let currentDiaryDeleteId = '';
+        let currentPhotoMemoryPageId = '';
+        let currentPhotoMemoryDeleteId = '';
+        let currentPhotoMemorySelectedId = '';
+        let photoMemoryDrag = null;
+        const DEFAULT_LOCAL_ACCOUNTS = [
+            { username: 'Aakira', password: 'Aakira14*', banned: false },
+            { username: 'aqua', password: 'aqua', banned: false },
+            { username: 'Kuromi', password: 'Kuromi', banned: false },
+            { username: 'Madhuri', password: 'Madhuri', banned: false }
+        ];
+
+        function getCurrentUsername() {
+            return localStorage.getItem('currentUser') || 'friend';
+        }
+
+        function makeUniqueId(prefix) {
+            if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+                return prefix + '-' + window.crypto.randomUUID();
+            }
+            return prefix + '-' + Date.now() + '-' + Math.random().toString(16).slice(2);
+        }
+
+        function getProfilePhotoKey(username) {
+            return 'profilePhoto:' + username;
+        }
+
+        function getTodoHistoryKey(username) {
+            return 'todoHistory:' + username;
+        }
+
+        function getDiaryHistoryKey(username) {
+            return 'diaryHistory:' + username;
+        }
+
+        function getDiaryLegacyKey(username) {
+            return 'diary:' + username;
+        }
+
+        function getPhotoMemoryHistoryKey(username) {
+            return 'photoMemoryHistory:' + username;
+        }
+
+        function getPhotoMemoryItemsKey(username, pageId) {
+            return 'photoMemoryItems:' + username + ':' + pageId;
+        }
+
+        function getDateKeyFromDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return year + '-' + month + '-' + day;
+        }
+
+        function formatDatePartsFromKey(dateKey) {
+            const parts = dateKey.split('-').map((part) => parseInt(part, 10));
+            const date = new Date(parts[0] || 2000, (parts[1] || 1) - 1, parts[2] || 1);
+            return {
+                dateText: date.toLocaleDateString(undefined, {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                }),
+                dayText: date.toLocaleDateString(undefined, {
+                    weekday: 'long'
+                })
+            };
+        }
+
+        function parseJsonList(raw) {
+            if (!raw) {
+                return [];
+            }
+            try {
+                const parsed = JSON.parse(raw);
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (error) {
+                return [];
+            }
+        }
+
+        function getLocalAccountKey() {
+            return 'mochimeloLocalAccounts';
+        }
+
+        function readLocalAccounts() {
+            const raw = localStorage.getItem(getLocalAccountKey());
+            if (!raw) {
+                return DEFAULT_LOCAL_ACCOUNTS.map((account) => ({ ...account }));
+            }
+            const parsed = parseJsonList(raw);
+            if (parsed.length === 0) {
+                return DEFAULT_LOCAL_ACCOUNTS.map((account) => ({ ...account }));
+            }
+            return parsed
+                .filter((item) => item && typeof item.username === 'string' && typeof item.password === 'string')
+                .map((item) => ({
+                    username: item.username,
+                    password: item.password,
+                    banned: Boolean(item.banned)
+                }));
+        }
+
+        function writeLocalAccounts(accounts) {
+            localStorage.setItem(getLocalAccountKey(), JSON.stringify(accounts));
+        }
+
+        function getStoredAccount(username) {
+            const accounts = readLocalAccounts();
+            return accounts.find((account) => account.username === username) || null;
+        }
+
+        function upsertStoredAccount(username, password) {
+            const accounts = readLocalAccounts();
+            const index = accounts.findIndex((account) => account.username === username);
+            const nextAccount = { username: username, password: password, banned: false };
+            if (index >= 0) {
+                accounts[index] = nextAccount;
+            } else {
+                accounts.unshift(nextAccount);
+            }
+            writeLocalAccounts(accounts);
+            return nextAccount;
+        }
+
+        function getCurrentDiaryPages(username) {
+            const key = getDiaryHistoryKey(username);
+            const legacyKey = getDiaryLegacyKey(username);
+            const raw = localStorage.getItem(key);
+            let pages = parseJsonList(raw).map((page, index) => {
+                if (typeof page === 'string') {
+                    const dateKey = getDateKeyFromDate(new Date());
+                    const parts = getCurrentDateParts();
+                    return {
+                        id: 'diary-' + dateKey + '-' + index,
+                        dateKey: dateKey,
+                        dateText: parts.dateText,
+                        dayText: parts.dayText,
+                        content: page
+                    };
+                }
+                const dateKey = page.dateKey || getDateKeyFromDate(new Date());
+                const parts = page.dateText && page.dayText ? {
+                    dateText: page.dateText,
+                    dayText: page.dayText
+                } : formatDatePartsFromKey(dateKey);
+                return {
+                    id: page.id || ('diary-' + dateKey + '-' + index),
+                    dateKey: dateKey,
+                    dateText: parts.dateText,
+                    dayText: parts.dayText,
+                    content: typeof page.content === 'string' ? page.content : (page.text || '')
+                };
+            });
+
+            if (pages.length === 0) {
+                const legacyContent = localStorage.getItem(legacyKey);
+                if (legacyContent) {
+                    const todayKey = getDateKeyFromDate(new Date());
+                    const parts = getCurrentDateParts();
+                    pages = [{
+                        id: 'diary-' + todayKey,
+                        dateKey: todayKey,
+                        dateText: parts.dateText,
+                        dayText: parts.dayText,
+                        content: legacyContent
+                    }];
+                    localStorage.removeItem(legacyKey);
+                    localStorage.setItem(key, JSON.stringify(pages));
+                }
+            }
+
+            return pages;
+        }
+
+        function saveDiaryPages(username, pages) {
+            localStorage.setItem(getDiaryHistoryKey(username), JSON.stringify(pages));
+        }
+
+        function getDiaryPageById(pageId) {
+            const pages = getCurrentDiaryPages(getCurrentUsername());
+            return pages.find((page) => page.id === pageId) || null;
+        }
+
+        function getDiaryTodayPage() {
+            const username = getCurrentUsername();
+            const pages = getCurrentDiaryPages(username);
+            const todayKey = getDateKeyFromDate(new Date());
+            const parts = getCurrentDateParts();
+            let page = pages.find((entry) => entry.dateKey === todayKey) || null;
+            if (!page) {
+                page = {
+                    id: 'diary-' + todayKey,
+                    dateKey: todayKey,
+                    dateText: parts.dateText,
+                    dayText: parts.dayText,
+                    content: ''
+                };
+                pages.unshift(page);
+                saveDiaryPages(username, pages);
+            }
+            return page;
+        }
+
+        function clearDiarySearch() {
+            const input = document.getElementById('diary-search-input');
+            if (input) {
+                input.value = '';
+            }
+            renderDiaryHomePage();
+        }
+
+        function renderDiaryHomePage() {
+            const historyEl = document.getElementById('diary-history');
+            if (!historyEl) {
+                return;
+            }
+            const username = getCurrentUsername();
+            const pages = getCurrentDiaryPages(username).slice().sort((left, right) => right.dateKey.localeCompare(left.dateKey));
+            const queryEl = document.getElementById('diary-search-input');
+            const query = queryEl ? queryEl.value.trim().toLowerCase() : '';
+            const filtered = query ? pages.filter((page) => {
+                const haystack = [page.dateKey, page.dateText, page.dayText, page.content].join(' ').toLowerCase();
+                return haystack.includes(query);
+            }) : pages;
+
+            if (filtered.length === 0) {
+                historyEl.innerHTML = '<div class="todo-empty">No diary pages match your search yet.</div>';
+                return;
+            }
+
+            historyEl.innerHTML = filtered.map((page) => {
+                const safeId = page.id.replace(/'/g, "\\'");
+                return '<div class="diary-history-card" onclick="openDiaryPageById(\'' + safeId + '\')" role="button" tabindex="0">' +
+                    '<button class="diary-history-delete" onclick="requestDeleteDiaryEntry(\'' + safeId + '\', event)">DEL</button>' +
+                    '<div class="diary-history-label">' + page.dateText + '</div>' +
+                    '<div class="diary-history-day">' + page.dayText + '</div>' +
+                    '</div>';
+            }).join('');
+        }
+
+        function openDiaryHomePage() {
+            closeChoicePopup();
+            hideAllPages();
+            document.getElementById('diary-home-page').classList.remove('is-hidden');
+            document.getElementById('diary-home-page').classList.add('is-active');
+            showBackButton();
+            currentDiaryPageId = '';
+            currentScreen = 'diary-home';
+            updateHeaderTone();
+            renderDiaryHomePage();
+        }
+
+        function openDiaryEntryPage(pageId) {
+            closeChoicePopup();
+            hideAllPages();
+            document.getElementById('diary-page').classList.remove('is-hidden');
+            document.getElementById('diary-page').classList.add('is-active');
+            showBackButton();
+            currentScreen = 'diary-entry';
+            updateHeaderTone();
+            const page = pageId ? getDiaryPageById(pageId) : getDiaryTodayPage();
+            const activePage = page || getDiaryTodayPage();
+            currentDiaryPageId = activePage.id;
+            const parts = activePage.dateText && activePage.dayText ? {
+                dateText: activePage.dateText,
+                dayText: activePage.dayText
+            } : formatDatePartsFromKey(activePage.dateKey);
+            document.getElementById('diary-date').textContent = parts.dateText;
+            document.getElementById('diary-day').textContent = parts.dayText;
+            document.getElementById('diary-textarea').value = activePage.content || '';
+            document.getElementById('diary-textarea').focus();
+        }
+
+        function openDiaryPageById(pageId) {
+            openDiaryEntryPage(pageId);
+        }
+
+        function saveDiaryEntry() {
+            const textarea = document.getElementById('diary-textarea');
+            if (!textarea) {
+                return;
+            }
+            const username = getCurrentUsername();
+            const pages = getCurrentDiaryPages(username);
+            const content = textarea.value.trim();
+            let page = pages.find((entry) => entry.id === currentDiaryPageId);
+            if (!page) {
+                page = getDiaryTodayPage();
+            }
+            if (page) {
+                page.content = content;
+                const index = pages.findIndex((entry) => entry.id === page.id);
+                if (index >= 0) {
+                    pages[index] = page;
+                } else {
+                    pages.unshift(page);
+                }
+                saveDiaryPages(username, pages);
+            }
+            openDiaryHomePage();
+        }
+
+        function requestDeleteDiaryEntry(pageId, event) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            currentDiaryDeleteId = pageId;
+            document.getElementById('diary-confirm-overlay').classList.remove('is-hidden');
+            document.getElementById('diary-confirm-popup').classList.remove('is-hidden');
+        }
+
+        function cancelDeleteDiaryEntry() {
+            currentDiaryDeleteId = '';
+            document.getElementById('diary-confirm-overlay').classList.add('is-hidden');
+            document.getElementById('diary-confirm-popup').classList.add('is-hidden');
+        }
+
+        function confirmDeleteDiaryEntry() {
+            if (!currentDiaryDeleteId) {
+                cancelDeleteDiaryEntry();
+                return;
+            }
+            const deletingId = currentDiaryDeleteId;
+            const username = getCurrentUsername();
+            let pages = getCurrentDiaryPages(username);
+            pages = pages.filter((entry) => entry.id !== deletingId);
+            saveDiaryPages(username, pages);
+            localStorage.removeItem(getDiaryLegacyKey(username));
+            cancelDeleteDiaryEntry();
+            renderDiaryHomePage();
+            if (currentScreen === 'diary-entry' && currentDiaryPageId === deletingId) {
+                currentDiaryPageId = '';
+                openDiaryHomePage();
+            }
+        }
+
+        function normalizePhotoMemoryItem(item) {
+            const width = Number(item.width) > 0 ? Number(item.width) : 180;
+            const height = Number(item.height) > 0 ? Number(item.height) : 180;
+            return {
+                id: item.id || makeUniqueId('memory-item'),
+                type: 'photo',
+                src: item.src || '',
+                label: item.label || '',
+                x: Number(item.x) || 40,
+                y: Number(item.y) || 40,
+                width: width,
+                height: height,
+                z: Number(item.z) || 1
+            };
+        }
+
+        function normalizePhotoMemoryPage(page, index) {
+            return {
+                id: page.id || makeUniqueId('memory-page'),
+                title: typeof page.title === 'string' ? page.title : '',
+                createdAt: page.createdAt || new Date().toISOString(),
+                items: Array.isArray(page.items)
+                    ? page.items
+                        .filter((item) => item && item.type !== 'sticker')
+                        .map(normalizePhotoMemoryItem)
+                    : []
+            };
+        }
+
+        function getCurrentPhotoMemoryPages(username) {
+            const raw = localStorage.getItem(getPhotoMemoryHistoryKey(username));
+            const seenIds = new Set();
+            let repaired = false;
+            const pages = parseJsonList(raw).map((page, index) => {
+                const normalized = normalizePhotoMemoryPage(page, index);
+                if (!normalized.id || seenIds.has(normalized.id)) {
+                    normalized.id = makeUniqueId('memory-page');
+                    repaired = true;
+                }
+                seenIds.add(normalized.id);
+                const itemsKey = getPhotoMemoryItemsKey(username, normalized.id);
+                const storedItems = parseJsonList(localStorage.getItem(itemsKey));
+                const migratedItems = Array.isArray(normalized.items) && normalized.items.length > 0
+                    ? normalized.items
+                    : storedItems;
+                normalized.items = migratedItems.map(normalizePhotoMemoryItem);
+                if (storedItems.length === 0 && migratedItems.length > 0) {
+                    localStorage.setItem(itemsKey, JSON.stringify(normalized.items));
+                }
+                return normalized;
+            });
+            if (repaired) {
+                savePhotoMemoryPages(username, pages);
+            }
+            return pages;
+        }
+
+        function savePhotoMemoryPages(username, pages) {
+            const metadataPages = pages.map((page) => ({
+                id: page.id,
+                title: typeof page.title === 'string' ? page.title : '',
+                createdAt: page.createdAt || new Date().toISOString()
+            }));
+            localStorage.setItem(getPhotoMemoryHistoryKey(username), JSON.stringify(metadataPages));
+            pages.forEach((page) => {
+                localStorage.setItem(
+                    getPhotoMemoryItemsKey(username, page.id),
+                    JSON.stringify(Array.isArray(page.items) ? page.items.map(normalizePhotoMemoryItem) : [])
+                );
+            });
+        }
+
+        function getPhotoMemoryPageById(pageId) {
+            const pages = getCurrentPhotoMemoryPages(getCurrentUsername());
+            return pages.find((page) => page.id === pageId) || null;
+        }
+
+        function clearAuthFields() {
+            ['username', 'password', 'new-username', 'new-password', 'confirm-password', 'admin-secret'].forEach((id) => {
+                const input = document.getElementById(id);
+                if (input) {
+                    input.value = '';
+                }
+            });
+        }
+
+        function getPhotoMemoryPageIndex(pageId) {
+            const pages = getCurrentPhotoMemoryPages(getCurrentUsername());
+            return pages.findIndex((page) => page.id === pageId);
+        }
+
+        function getPhotoMemoryActivePage() {
+            return getPhotoMemoryPageById(currentPhotoMemoryPageId);
+        }
+
+        function createPhotoMemoryPageRecord() {
+            return {
+                id: makeUniqueId('memory-page'),
+                title: '',
+                createdAt: new Date().toISOString(),
+                items: []
+            };
+        }
+
+        function nextPhotoMemoryZ(page) {
+            if (!page.items || page.items.length === 0) {
+                return 1;
+            }
+            return Math.max(...page.items.map((item) => Number(item.z) || 1)) + 1;
+        }
+
+        function renderPhotoMemoryHomePage() {
+            const list = document.getElementById('memory-home-list');
+            if (!list) {
+                return;
+            }
+            const pages = getCurrentPhotoMemoryPages(getCurrentUsername()).slice().sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+            if (pages.length === 0) {
+                list.innerHTML = '<div class="todo-empty">No memory pages yet. Create your first board with the button above.</div>';
+                return;
+            }
+            list.innerHTML = pages.map((page, index) => {
+                const title = page.title && page.title.trim() ? page.title.trim() : ('Page ' + (pages.length - index));
+                const safeId = page.id.replace(/'/g, "\\'");
+                return '<div class="memory-home-card" onclick="openPhotoMemoryPageById(\'' + safeId + '\')" role="button" tabindex="0">' +
+                    '<button class="memory-history-delete" onclick="requestDeletePhotoMemoryPageById(\'' + safeId + '\', event)">DEL</button>' +
+                    '<div class="memory-home-card-title">' + title + '</div>' +
+                    '<div class="memory-home-card-meta">' + page.items.length + ' items</div>' +
+                    '</div>';
+            }).join('');
+        }
+
+        function openPhotoMemoryHomePage() {
+            closeChoicePopup();
+            hideAllPages();
+            document.getElementById('photo-memory-home-page').classList.remove('is-hidden');
+            document.getElementById('photo-memory-home-page').classList.add('is-active');
+            showBackButton();
+            currentPhotoMemorySelectedId = '';
+            currentPhotoMemoryPageId = '';
+            currentPhotoMemoryDeleteId = '';
+            currentScreen = 'memory-home';
+            updateHeaderTone();
+            renderPhotoMemoryHomePage();
+        }
+
+        function openPhotoMemoryEntryPage() {
+            const username = getCurrentUsername();
+            const pages = getCurrentPhotoMemoryPages(username);
+            const page = createPhotoMemoryPageRecord();
+            pages.unshift(page);
+            savePhotoMemoryPages(username, pages);
+            openPhotoMemoryPage(page.id);
+        }
+
+        function openPhotoMemoryPageById(pageId) {
+            openPhotoMemoryPage(pageId);
+        }
+
+        function openPhotoMemoryPage(pageId) {
+            closeChoicePopup();
+            hideAllPages();
+            document.getElementById('photo-memory-page').classList.remove('is-hidden');
+            document.getElementById('photo-memory-page').classList.add('is-active');
+            showBackButton();
+            currentScreen = 'memory-page';
+            updateHeaderTone();
+            currentPhotoMemoryPageId = pageId;
+            currentPhotoMemorySelectedId = '';
+            photoMemoryDrag = null;
+            const page = getPhotoMemoryPageById(pageId) || createPhotoMemoryPageRecord();
+            document.getElementById('photo-memory-title-input').value = page.title || '';
+            renderPhotoMemoryBoard();
+        }
+
+        function closePhotoMemoryPage() {
+            saveCurrentPhotoMemoryState();
+            openPhotoMemoryHomePage();
+        }
+
+        function saveCurrentPhotoMemoryState() {
+            const username = getCurrentUsername();
+            const pages = getCurrentPhotoMemoryPages(username);
+            const index = pages.findIndex((page) => page.id === currentPhotoMemoryPageId);
+            if (index < 0) {
+                return;
+            }
+            const active = getPhotoMemoryActivePage();
+            if (!active) {
+                return;
+            }
+            active.title = document.getElementById('photo-memory-title-input').value.trim();
+            pages[index] = active;
+            savePhotoMemoryPages(username, pages);
+        }
+
+        function persistPhotoMemoryDraggedItem(itemId, updater) {
+            const username = getCurrentUsername();
+            const pages = getCurrentPhotoMemoryPages(username);
+            const pageIndex = pages.findIndex((page) => page.id === currentPhotoMemoryPageId);
+            if (pageIndex < 0) {
+                return null;
+            }
+            const page = pages[pageIndex];
+            const item = page.items.find((entry) => entry.id === itemId);
+            if (!item) {
+                return null;
+            }
+            updater(item);
+            page.title = document.getElementById('photo-memory-title-input').value.trim();
+            pages[pageIndex] = page;
+            savePhotoMemoryPages(username, pages);
+            return item;
+        }
+
+        function getPhotoMemoryBoardBounds() {
+            const board = document.getElementById('photo-memory-board');
+            return {
+                width: Math.max(800, board.clientWidth || 0),
+                height: Math.max(900, board.clientHeight || 0)
+            };
+        }
+
+        function addPhotoMemoryItem(item) {
+            const username = getCurrentUsername();
+            const pages = getCurrentPhotoMemoryPages(username);
+            const index = pages.findIndex((page) => page.id === currentPhotoMemoryPageId);
+            if (index < 0) {
+                return;
+            }
+            const active = pages[index];
+            const bounds = getPhotoMemoryBoardBounds();
+            const width = item.width || 180;
+            const height = item.height || 180;
+            const photoMax = active.items
+                .reduce((max, entry) => Math.max(max, Number(entry.z) || 1), 0);
+            const nextItem = normalizePhotoMemoryItem({
+                ...item,
+                x: Math.max(20, Math.floor(bounds.width / 2 - width / 2)),
+                y: Math.max(20, Math.floor(bounds.height / 3 - height / 2)),
+                width: width,
+                height: height,
+                z: photoMax + 1
+            });
+            active.items.push(nextItem);
+            pages[index] = active;
+            savePhotoMemoryPages(username, pages);
+            currentPhotoMemorySelectedId = nextItem.id;
+            renderPhotoMemoryBoard();
+        }
+
+        function triggerPhotoMemoryUpload() {
+            const input = document.getElementById('photo-memory-file-input');
+            if (input) {
+                input.click();
+            }
+        }
+
+        function handlePhotoMemoryUpload(event) {
+            const files = Array.from((event.target && event.target.files) || []);
+            if (files.length === 0) {
+                return;
+            }
+            files.forEach((file) => {
+                const reader = new FileReader();
+                reader.onload = function (loadEvent) {
+                    const result = loadEvent.target && loadEvent.target.result;
+                    if (typeof result === 'string') {
+                        addPhotoMemoryItem({
+                            type: 'photo',
+                            src: result,
+                            label: file.name,
+                            width: 200,
+                            height: 200
+                        });
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+            event.target.value = '';
+        }
+
+        function selectPhotoMemoryItem(itemId) {
+            currentPhotoMemorySelectedId = itemId;
+            renderPhotoMemoryBoard();
+        }
+
+        function renderPhotoMemoryBoard() {
+            const board = document.getElementById('photo-memory-board');
+            if (!board) {
+                return;
+            }
+            const page = getPhotoMemoryActivePage();
+            if (!page) {
+                board.innerHTML = '';
+                return;
+            }
+            board.innerHTML = page.items.map((item) => {
+                const selected = item.id === currentPhotoMemorySelectedId ? ' is-selected' : '';
+                const style = 'left:' + item.x + 'px; top:' + item.y + 'px; width:' + item.width + 'px; height:' + item.height + 'px; z-index:' + item.z + ';';
+                return '<div class="memory-board-item is-photo' + selected + '" data-item-id="' + item.id + '" data-item-type="' + item.type + '" style="' + style + '">' +
+                    '<img src="' + item.src + '" alt="' + (item.label || 'memory item') + '">' +
+                    '<div class="memory-resize-handle" aria-hidden="true"></div>' +
+                    '</div>';
+            }).join('');
+
+            board.querySelectorAll('.memory-board-item').forEach((itemEl) => {
+                itemEl.addEventListener('pointerdown', handlePhotoMemoryPointerDown);
+            });
+            board.onclick = function (event) {
+                if (event.target === board) {
+                    currentPhotoMemorySelectedId = '';
+                    renderPhotoMemoryBoard();
+                }
+            };
+        }
+
+        function handlePhotoMemoryPointerDown(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const itemEl = event.currentTarget;
+            const itemId = itemEl.getAttribute('data-item-id');
+            const itemType = itemEl.getAttribute('data-item-type');
+            const board = document.getElementById('photo-memory-board');
+            const boardRect = board.getBoundingClientRect();
+            const page = getPhotoMemoryActivePage();
+            if (!page) {
+                return;
+            }
+            const item = page.items.find((entry) => entry.id === itemId);
+            if (!item) {
+                return;
+            }
+            currentPhotoMemorySelectedId = itemId;
+            const isResize = event.target.classList.contains('memory-resize-handle');
+            photoMemoryDrag = {
+                itemId: itemId,
+                itemEl: itemEl,
+                mode: isResize ? 'resize' : 'move',
+                startX: event.clientX,
+                startY: event.clientY,
+                startLeft: item.x,
+                startTop: item.y,
+                startWidth: item.width,
+                startHeight: item.height,
+                boardWidth: boardRect.width,
+                boardHeight: boardRect.height
+            };
+            itemEl.setPointerCapture(event.pointerId);
+            window.addEventListener('pointermove', handlePhotoMemoryPointerMove);
+            document.addEventListener('pointerup', handlePhotoMemoryPointerUp, { once: true });
+        }
+
+        function handlePhotoMemoryPointerMove(event) {
+            if (!photoMemoryDrag) {
+                return;
+            }
+            const item = persistPhotoMemoryDraggedItem(photoMemoryDrag.itemId, (savedItem) => {
+                const deltaX = event.clientX - photoMemoryDrag.startX;
+                const deltaY = event.clientY - photoMemoryDrag.startY;
+                if (photoMemoryDrag.mode === 'resize') {
+                    savedItem.width = Math.max(90, photoMemoryDrag.startWidth + deltaX);
+                    savedItem.height = Math.max(90, photoMemoryDrag.startHeight + deltaY);
+                } else {
+                    const maxX = Math.max(0, photoMemoryDrag.boardWidth - savedItem.width);
+                    const maxY = Math.max(0, photoMemoryDrag.boardHeight - savedItem.height);
+                    savedItem.x = Math.max(0, Math.min(maxX, photoMemoryDrag.startLeft + deltaX));
+                    savedItem.y = Math.max(0, Math.min(maxY, photoMemoryDrag.startTop + deltaY));
+                }
+            });
+            if (!item) {
+                return;
+            }
+            if (photoMemoryDrag.mode === 'resize') {
+                const width = item.width;
+                const height = item.height;
+                if (photoMemoryDrag.itemEl) {
+                    photoMemoryDrag.itemEl.style.width = width + 'px';
+                    photoMemoryDrag.itemEl.style.height = height + 'px';
+                }
+            } else {
+                if (photoMemoryDrag.itemEl) {
+                    photoMemoryDrag.itemEl.style.left = item.x + 'px';
+                    photoMemoryDrag.itemEl.style.top = item.y + 'px';
+                }
+            }
+        }
+
+        function handlePhotoMemoryPointerUp() {
+            window.removeEventListener('pointermove', handlePhotoMemoryPointerMove);
+            if (!photoMemoryDrag) {
+                return;
+            }
+            saveCurrentPhotoMemoryState();
+            photoMemoryDrag = null;
+            renderPhotoMemoryBoard();
+        }
+
+        function deleteSelectedPhotoMemoryItem() {
+            if (!currentPhotoMemorySelectedId) {
+                showErrorPopup('select an item first');
+                return;
+            }
+            const username = getCurrentUsername();
+            const pages = getCurrentPhotoMemoryPages(username);
+            const index = pages.findIndex((page) => page.id === currentPhotoMemoryPageId);
+            if (index < 0) {
+                return;
+            }
+            pages[index].items = pages[index].items.filter((item) => item.id !== currentPhotoMemorySelectedId);
+            savePhotoMemoryPages(username, pages);
+            currentPhotoMemorySelectedId = '';
+            renderPhotoMemoryBoard();
+        }
+
+        function savePhotoMemoryPageTitle() {
+            const username = getCurrentUsername();
+            const pages = getCurrentPhotoMemoryPages(username);
+            const index = pages.findIndex((page) => page.id === currentPhotoMemoryPageId);
+            if (index < 0) {
+                return;
+            }
+            pages[index].title = document.getElementById('photo-memory-title-input').value.trim();
+            savePhotoMemoryPages(username, pages);
+            renderPhotoMemoryHomePage();
+        }
+
+        function requestDeletePhotoMemoryPage() {
+            currentPhotoMemoryDeleteId = currentPhotoMemoryPageId;
+            document.getElementById('photo-memory-confirm-overlay').classList.remove('is-hidden');
+            document.getElementById('photo-memory-confirm-popup').classList.remove('is-hidden');
+        }
+
+        function requestDeletePhotoMemoryPageById(pageId, event) {
+            if (event) {
+                event.stopPropagation();
+                event.preventDefault();
+            }
+            currentPhotoMemoryDeleteId = pageId;
+            document.getElementById('photo-memory-confirm-overlay').classList.remove('is-hidden');
+            document.getElementById('photo-memory-confirm-popup').classList.remove('is-hidden');
+        }
+
+        function cancelDeletePhotoMemoryPage() {
+            currentPhotoMemoryDeleteId = '';
+            document.getElementById('photo-memory-confirm-overlay').classList.add('is-hidden');
+            document.getElementById('photo-memory-confirm-popup').classList.add('is-hidden');
+        }
+
+        function confirmDeletePhotoMemoryPage() {
+            if (!currentPhotoMemoryDeleteId) {
+                cancelDeletePhotoMemoryPage();
+                return;
+            }
+            const deletingId = currentPhotoMemoryDeleteId;
+            const username = getCurrentUsername();
+            let pages = getCurrentPhotoMemoryPages(username);
+            pages = pages.filter((page) => page.id !== deletingId);
+            savePhotoMemoryPages(username, pages);
+            localStorage.removeItem(getPhotoMemoryItemsKey(username, deletingId));
+            cancelDeletePhotoMemoryPage();
+            if (deletingId === currentPhotoMemoryPageId) {
+                currentPhotoMemoryPageId = '';
+                openPhotoMemoryHomePage();
+                return;
+            }
+            renderPhotoMemoryHomePage();
+        }
+
+        function hideAllPages() {
+            document.getElementById('main-page').classList.add('is-hidden');
+            document.getElementById('login-page').classList.add('is-hidden');
+            document.getElementById('login-page').classList.remove('is-active');
+            document.getElementById('create-account-page').classList.add('is-hidden');
+            document.getElementById('create-account-page').classList.remove('is-active');
+            document.getElementById('welcome-page').classList.add('is-hidden');
+            document.getElementById('welcome-page').classList.remove('is-active');
+            document.getElementById('timer-page').classList.add('is-hidden');
+            document.getElementById('timer-page').classList.remove('is-active');
+            document.getElementById('todo-page').classList.add('is-hidden');
+            document.getElementById('todo-page').classList.remove('is-active');
+            document.getElementById('todo-entry-page').classList.add('is-hidden');
+            document.getElementById('todo-entry-page').classList.remove('is-active');
+            document.getElementById('diary-home-page').classList.add('is-hidden');
+            document.getElementById('diary-home-page').classList.remove('is-active');
+            document.getElementById('diary-page').classList.add('is-hidden');
+            document.getElementById('diary-page').classList.remove('is-active');
+            document.getElementById('photo-memory-home-page').classList.add('is-hidden');
+            document.getElementById('photo-memory-home-page').classList.remove('is-active');
+            document.getElementById('photo-memory-page').classList.add('is-hidden');
+            document.getElementById('photo-memory-page').classList.remove('is-active');
+            cancelDeleteDiaryEntry();
+            cancelDeletePhotoMemoryPage();
+        }
+
+        function showBackButton() {
+            document.querySelector('.back-btn').classList.remove('is-hidden');
+            document.querySelector('.back-btn').classList.add('is-active');
+        }
+
+        function hideBackButton() {
+            document.querySelector('.back-btn').classList.add('is-hidden');
+            document.querySelector('.back-btn').classList.remove('is-active');
+        }
+
+        function updateHeaderTone() {
+            const fadedScreens = new Set([
+                'timer',
+                'todo',
+                'todo-entry',
+                'diary-home',
+                'diary-entry',
+                'memory-home',
+                'memory-page'
+            ]);
+            document.body.classList.toggle('brand-faded', fadedScreens.has(currentScreen));
+            const musicWrap = document.querySelector('.music-wrap');
+            if (musicWrap) {
+                const showMusic = currentScreen === 'main' || currentScreen === 'welcome';
+                musicWrap.classList.toggle('is-hidden', !showMusic);
+            }
+        }
+
+        function createStars() {
+            const layer = document.getElementById('stars-layer');
+            if (layer.childElementCount > 0) {
+                return;
+            }
+
+            const starPositions = [
+                { top: '12%', left: '14%', delay: '0s', duration: '2.2s' },
+                { top: '18%', left: '78%', delay: '0.5s', duration: '2.8s' },
+                { top: '28%', left: '24%', delay: '1.1s', duration: '2.1s' },
+                { top: '32%', left: '88%', delay: '0.2s', duration: '2.7s' },
+                { top: '46%', left: '10%', delay: '1.4s', duration: '2.5s' },
+                { top: '52%', left: '76%', delay: '0.8s', duration: '2.3s' },
+                { top: '64%', left: '18%', delay: '0.1s', duration: '2.6s' },
+                { top: '70%', left: '84%', delay: '1.6s', duration: '2.2s' },
+                { top: '82%', left: '28%', delay: '0.7s', duration: '2.9s' },
+                { top: '86%', left: '68%', delay: '1.2s', duration: '2.4s' }
+            ];
+
+            starPositions.forEach((star) => {
+                const el = document.createElement('span');
+                el.className = 'pixel-star';
+                el.style.top = star.top;
+                el.style.left = star.left;
+                el.style.animationDelay = star.delay;
+                el.style.animationDuration = star.duration;
+                layer.appendChild(el);
+            });
+        }
+
+        function typeWelcomeMessage(username) {
+            const welcomeText = document.getElementById('welcome-text');
+            const message = 'Hello, ' + username + ' !!';
+            let index = 0;
+
+            clearTimeout(typingTimeout);
+            welcomeText.textContent = '';
+            welcomeText.classList.add('typing-cursor');
+
+            function typeNextLetter() {
+                welcomeText.textContent = message.slice(0, index);
+                if (index < message.length) {
+                    index += 1;
+                    typingTimeout = setTimeout(typeNextLetter, 110);
+                } else {
+                    welcomeText.classList.remove('typing-cursor');
+                }
+            }
+
+            typeNextLetter();
+        }
+
+        function showMainPage() {
+            hideAllPages();
+            document.getElementById('main-page').classList.remove('is-hidden');
+            hideBackButton();
+            closeSettingsMenu();
+            closeProfilePopup();
+            closeAdminPopup();
+            closeChoicePopup();
+            currentScreen = 'main';
+            updateHeaderTone();
+            startBackgroundMusic();
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('new-username').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('confirm-password').value = '';
+            clearAuthFields();
+        }
+
+        function typeSplashText(callback) {
+            const splashText = document.getElementById('splash-text');
+            const message = 'MOCHIMELO';
+            let index = 0;
+            clearTimeout(splashTypingTimeout);
+            splashText.textContent = '';
+            function typeNext() {
+                splashText.textContent = message.slice(0, index);
+                if (index < message.length) {
+                    index += 1;
+                    splashTypingTimeout = setTimeout(typeNext, 95);
+                } else if (typeof callback === 'function') {
+                    callback();
+                }
+            }
+            typeNext();
+        }
+
+        function playLaunchSplash() {
+            const splash = document.getElementById('splash-screen');
+            if (!splash) {
+                return;
+            }
+            splash.classList.remove('is-hidden');
+            splash.classList.remove('is-fading');
+            typeSplashText(() => {
+                clearTimeout(splashFadeTimeout);
+                splashFadeTimeout = setTimeout(() => {
+                    splash.classList.add('is-fading');
+                    setTimeout(() => {
+                        splash.classList.add('is-hidden');
+                        splash.classList.remove('is-fading');
+                        document.body.classList.remove('app-loading');
+                        document.body.classList.add('app-ready');
+                        const currentUser = localStorage.getItem('currentUser');
+                        if (currentUser) {
+                            showWelcomePage(currentUser);
+                        } else {
+                            showMainPage();
+                        }
+                    }, 850);
+                }, 700);
+            });
+        }
+
+        function updateProfilePopup() {
+            const username = getCurrentUsername();
+            const savedPhoto = localStorage.getItem(getProfilePhotoKey(username));
+            document.getElementById('profile-username').textContent = username;
+            document.getElementById('profile-photo-preview').src = savedPhoto || 'pixel_heart_transparent.png';
+        }
+
+        function toggleSettingsMenu(event) {
+            if (event) {
+                event.stopPropagation();
+            }
+            document.getElementById('settings-menu').classList.toggle('is-hidden');
+        }
+
+        function closeSettingsMenu() {
+            document.getElementById('settings-menu').classList.add('is-hidden');
+        }
+
+        function openProfilePopup(event) {
+            if (event) {
+                event.stopPropagation();
+            }
+            updateProfilePopup();
+            closeSettingsMenu();
+            document.getElementById('profile-overlay').classList.remove('is-hidden');
+            document.getElementById('profile-popup').classList.remove('is-hidden');
+        }
+
+        function closeProfilePopup() {
+            document.getElementById('profile-overlay').classList.add('is-hidden');
+            document.getElementById('profile-popup').classList.add('is-hidden');
+        }
+
+        function openAdminPopup() {
+            document.getElementById('admin-overlay').classList.remove('is-hidden');
+            document.getElementById('admin-popup').classList.remove('is-hidden');
+            if (adminToken) {
+                document.getElementById('admin-login-panel').classList.add('is-hidden');
+                document.getElementById('admin-users-panel').classList.remove('is-hidden');
+                document.getElementById('admin-status').textContent = 'Status: Unlocked';
+                loadAdminUsers().catch((error) => {
+                    console.error(error);
+                    showErrorPopup('could not load admin users');
+                });
+            } else {
+                document.getElementById('admin-login-panel').classList.remove('is-hidden');
+                document.getElementById('admin-users-panel').classList.add('is-hidden');
+                document.getElementById('admin-status').textContent = 'Status: Locked';
+                document.getElementById('admin-secret').focus();
+            }
+        }
+
+        function closeAdminPopup() {
+            document.getElementById('admin-overlay').classList.add('is-hidden');
+            document.getElementById('admin-popup').classList.add('is-hidden');
+            document.getElementById('admin-secret').value = '';
+        }
+
+        function isLocalAdminSession() {
+            return adminToken === 'local-admin';
+        }
+
+        function renderAdminUsers() {
+            const list = document.getElementById('admin-user-list');
+            if (accountsCache.length === 0) {
+                document.getElementById('admin-status').textContent = 'Status: Unlocked • 0 users loaded';
+                list.innerHTML = '<div class="admin-row"><div class="admin-row-info">No users saved yet.</div></div>';
+                return;
+            }
+
+            document.getElementById('admin-status').textContent = 'Status: Unlocked • ' + accountsCache.length + ' users loaded';
+
+            list.innerHTML = accountsCache.map((account) => {
+                const status = account.banned ? 'BANNED' : 'ACTIVE';
+                const safeUsername = account.username.replace(/'/g, "\\'");
+                return '<div class="admin-row">' +
+                    '<div class="admin-row-info"><strong>Username:</strong> ' + account.username +
+                    '<br><strong>Password:</strong> ' + account.password +
+                    '<br><strong>Status:</strong> ' + status + '</div>' +
+                    '<div class="admin-row-actions">' +
+                    '<button class="admin-mini-btn ban-btn" onclick="banUser(\'' + safeUsername + '\')">Ban</button>' +
+                    '<button class="admin-mini-btn delete-btn" onclick="deleteUser(\'' + safeUsername + '\')">Delete</button>' +
+                    '</div></div>';
+            }).join('');
+        }
+
+        async function loadAdminUsers() {
+            if (isLocalAdminSession()) {
+                accountsCache = readLocalAccounts();
+                renderAdminUsers();
+                return;
+            }
+            const response = await fetch('/api/admin/accounts', {
+                headers: {
+                    'X-Admin-Token': adminToken
+                }
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || 'Could not load admin users');
+            }
+            accountsCache = Array.isArray(data.accounts) ? data.accounts : [];
+            renderAdminUsers();
+        }
+
+        async function submitAdminLogin() {
+            const secret = document.getElementById('admin-secret').value;
+            if (!secret) {
+                showErrorPopup('enter owner password');
+                return;
+            }
+
+            document.getElementById('admin-status').textContent = 'Status: Unlocking...';
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ secret: secret })
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    if (secret.trim() !== '1111') {
+                        showErrorPopup(data.error || 'owner login failed');
+                        document.getElementById('admin-status').textContent = 'Status: Locked';
+                        return;
+                    }
+                    adminToken = 'local-admin';
+                    accountsCache = readLocalAccounts();
+                    document.getElementById('admin-login-panel').classList.add('is-hidden');
+                    document.getElementById('admin-users-panel').classList.remove('is-hidden');
+                    document.getElementById('admin-status').textContent = 'Status: Unlocked • local fallback';
+                    renderAdminUsers();
+                    return;
+                }
+
+                adminToken = data.token;
+                document.getElementById('admin-login-panel').classList.add('is-hidden');
+                document.getElementById('admin-users-panel').classList.remove('is-hidden');
+                document.getElementById('admin-status').textContent = 'Status: Unlocked';
+                await loadAdminUsers();
+            } catch (error) {
+                console.error(error);
+                if (secret.trim() !== '1111') {
+                    showErrorPopup('owner login failed');
+                    document.getElementById('admin-status').textContent = 'Status: Locked';
+                    return;
+                }
+                adminToken = 'local-admin';
+                accountsCache = readLocalAccounts();
+                document.getElementById('admin-login-panel').classList.add('is-hidden');
+                document.getElementById('admin-users-panel').classList.remove('is-hidden');
+                document.getElementById('admin-status').textContent = 'Status: Unlocked • local fallback';
+                renderAdminUsers();
+            }
+        }
+
+        async function banUser(username) {
+            if (isLocalAdminSession()) {
+                const accounts = readLocalAccounts();
+                const user = accounts.find((account) => account.username === username);
+                if (!user) {
+                    showErrorPopup('could not ban user');
+                    return;
+                }
+                user.banned = true;
+                writeLocalAccounts(accounts);
+                accountsCache = accounts;
+                renderAdminUsers();
+                return;
+            }
+            const response = await fetch('/api/admin/ban', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Admin-Token': adminToken
+                },
+                body: JSON.stringify({ username: username })
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                showErrorPopup(data.error || 'could not ban user');
+                return;
+            }
+            await loadAdminUsers();
+        }
+
+        async function deleteUser(username) {
+            if (isLocalAdminSession()) {
+                const accounts = readLocalAccounts().filter((account) => account.username !== username);
+                writeLocalAccounts(accounts);
+                accountsCache = accounts;
+                renderAdminUsers();
+                return;
+            }
+            const response = await fetch('/api/admin/delete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Admin-Token': adminToken
+                },
+                body: JSON.stringify({ username: username })
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                showErrorPopup(data.error || 'could not delete user');
+                return;
+            }
+            await loadAdminUsers();
+        }
+
+        function openChoicePopup() {
+            document.getElementById('choice-overlay').classList.remove('is-hidden');
+            document.getElementById('choice-popup').classList.remove('is-hidden');
+        }
+
+        function closeChoicePopup() {
+            document.getElementById('choice-overlay').classList.add('is-hidden');
+            document.getElementById('choice-popup').classList.add('is-hidden');
+        }
+
+        function updateTimerCard(cardId, value) {
+            const card = document.getElementById(cardId);
+            const text = card.querySelector('.timer-value');
+            const safeValue = String(value).padStart(2, '0');
+
+            if (text.textContent !== safeValue) {
+                text.textContent = safeValue;
+                card.classList.remove('is-changing');
+                void card.offsetWidth;
+                card.classList.add('is-changing');
+                setTimeout(() => {
+                    card.classList.remove('is-changing');
+                }, 280);
+            }
+        }
+
+        function renderTimerFromDigits() {
+            const hours = timerDigits[0] + timerDigits[1];
+            const minutes = timerDigits[2] + timerDigits[3];
+            const seconds = timerDigits[4] + timerDigits[5];
+            updateTimerCard('timer-hours-card', hours);
+            updateTimerCard('timer-minutes-card', minutes);
+            updateTimerCard('timer-seconds-card', seconds);
+        }
+
+        function renderTimerFromSeconds() {
+            const hours = Math.floor(timerTotalSeconds / 3600);
+            const minutes = Math.floor((timerTotalSeconds % 3600) / 60);
+            const seconds = timerTotalSeconds % 60;
+            updateTimerCard('timer-hours-card', hours);
+            updateTimerCard('timer-minutes-card', minutes);
+            updateTimerCard('timer-seconds-card', seconds);
+        }
+
+        function syncTimerSecondsFromDigits() {
+            const hours = parseInt(timerDigits[0] + timerDigits[1], 10);
+            const minutes = parseInt(timerDigits[2] + timerDigits[3], 10);
+            const seconds = parseInt(timerDigits[4] + timerDigits[5], 10);
+            timerTotalSeconds = (hours * 3600) + (minutes * 60) + seconds;
+        }
+
+        function stopTimerInterval() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function getAudioContext() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+            return audioContext;
+        }
+
+        function startBackgroundMusic() {
+            if (backgroundMusicStarted) {
+                return;
+            }
+            const bgm = document.getElementById('bgm-audio');
+            if (!bgm) {
+                return;
+            }
+            if (backgroundMusicMuted) {
+                bgm.pause();
+                backgroundMusicStarted = false;
+                updateBackgroundMusicButton();
+                return;
+            }
+            bgm.volume = 0.035;
+            bgm.loop = true;
+            backgroundMusicStarted = true;
+            const playPromise = bgm.play();
+            if (playPromise && typeof playPromise.catch === 'function') {
+                playPromise.catch(() => {
+                    backgroundMusicStarted = false;
+                });
+            }
+            updateBackgroundMusicButton();
+        }
+
+        function ensureMusicAndClickSound() {
+            startBackgroundMusic();
+            playButtonClickSound();
+        }
+
+        function updateBackgroundMusicButton() {
+            const button = document.getElementById('music-toggle-btn');
+            const bgm = document.getElementById('bgm-audio');
+            if (!button || !bgm) {
+                return;
+            }
+            const muted = backgroundMusicMuted || bgm.paused;
+            button.textContent = muted ? '♪ OFF' : '♪ ON';
+            button.classList.toggle('is-muted', muted);
+        }
+
+        function toggleBackgroundMusic() {
+            const bgm = document.getElementById('bgm-audio');
+            if (!bgm) {
+                return;
+            }
+            backgroundMusicMuted = !backgroundMusicMuted;
+            localStorage.setItem('bgmMuted', backgroundMusicMuted ? '1' : '0');
+            if (backgroundMusicMuted) {
+                bgm.pause();
+            } else {
+                bgm.volume = 0.035;
+                const playPromise = bgm.play();
+                if (playPromise && typeof playPromise.catch === 'function') {
+                    playPromise.catch(() => {});
+                }
+            }
+            backgroundMusicStarted = !backgroundMusicMuted;
+            updateBackgroundMusicButton();
+        }
+
+        function playTone(frequency, startAt, duration, gainValue) {
+            const context = getAudioContext();
+            const oscillator = context.createOscillator();
+            const gain = context.createGain();
+
+            oscillator.type = 'triangle';
+            oscillator.frequency.setValueAtTime(frequency, startAt);
+            gain.gain.setValueAtTime(0.0001, startAt);
+            gain.gain.exponentialRampToValueAtTime(gainValue, startAt + 0.02);
+            gain.gain.exponentialRampToValueAtTime(0.0001, startAt + duration);
+
+            oscillator.connect(gain);
+            gain.connect(context.destination);
+            oscillator.start(startAt);
+            oscillator.stop(startAt + duration + 0.03);
+        }
+
+        function playTimerLoopOnce() {
+            if (timerSoundMuted) {
+                return;
+            }
+            const context = getAudioContext();
+            const now = context.currentTime;
+            playTone(523.25, now, 0.18, 0.035);
+            playTone(659.25, now + 0.22, 0.16, 0.03);
+        }
+
+        function startTimerLoopSound() {
+            stopTimerLoopSound();
+            playTimerLoopOnce();
+            timerLoopInterval = setInterval(() => {
+                playTimerLoopOnce();
+            }, 900);
+        }
+
+        function stopTimerLoopSound() {
+            if (timerLoopInterval) {
+                clearInterval(timerLoopInterval);
+                timerLoopInterval = null;
+            }
+        }
+
+        function playEndBeep() {
+            const context = getAudioContext();
+            const now = context.currentTime;
+            playTone(880, now, 0.16, 0.06);
+            playTone(1174.66, now + 0.18, 0.18, 0.06);
+            playTone(1567.98, now + 0.4, 0.28, 0.07);
+        }
+
+        function playButtonClickSound() {
+            const context = getAudioContext();
+            const now = context.currentTime;
+            playTone(659.25, now, 0.06, 0.12);
+            playTone(988, now + 0.02, 0.06, 0.1);
+            playTone(1318.51, now + 0.04, 0.055, 0.085);
+        }
+
+        function updateTimerSoundIcon() {
+            const icon = document.getElementById('timer-sound-icon');
+            if (!icon) {
+                return;
+            }
+            icon.src = timerSoundMuted ? 'sound_off.png' : 'sound_on.png';
+            icon.alt = timerSoundMuted ? 'Sound muted' : 'Sound on';
+        }
+
+        function toggleTimerSound() {
+            timerSoundMuted = !timerSoundMuted;
+            updateTimerSoundIcon();
+            if (!timerSoundMuted && timerInterval) {
+                playTimerLoopOnce();
+            }
+        }
+
+        function openTimerPage() {
+            closeChoicePopup();
+            hideAllPages();
+            document.getElementById('timer-page').classList.remove('is-hidden');
+            document.getElementById('timer-page').classList.add('is-active');
+            showBackButton();
+            currentScreen = 'timer';
+            updateHeaderTone();
+            updateTimerSoundIcon();
+            renderTimerFromDigits();
+        }
+
+        function renderTodoHistory() {
+            const historyEl = document.getElementById('todo-history');
+            const username = getCurrentUsername();
+            const raw = localStorage.getItem(getTodoHistoryKey(username));
+            const items = raw ? JSON.parse(raw) : [];
+
+            if (!Array.isArray(items) || items.length === 0) {
+                historyEl.innerHTML = '<div class="todo-empty">No history yet. Tap the little add button to save your first to-do.</div>';
+                return;
+            }
+
+            historyEl.innerHTML = items.map((item) => {
+                return '<div class="todo-entry">' + item + '</div>';
+            }).join('');
+        }
+
+        function openTodoPage() {
+            closeChoicePopup();
+            hideAllPages();
+            document.getElementById('todo-page').classList.remove('is-hidden');
+            document.getElementById('todo-page').classList.add('is-active');
+            showBackButton();
+            currentScreen = 'todo';
+            updateHeaderTone();
+            renderTodoHistory();
+        }
+
+        function addTodoEntry() {
+            const username = getCurrentUsername();
+            const text = window.prompt('Add a new to-do item:');
+            if (!text) {
+                return;
+            }
+
+            const trimmed = text.trim();
+            if (!trimmed) {
+                return;
+            }
+
+            const key = getTodoHistoryKey(username);
+            const raw = localStorage.getItem(key);
+            const items = raw ? JSON.parse(raw) : [];
+            items.unshift(trimmed);
+            localStorage.setItem(key, JSON.stringify(items));
+            renderTodoHistory();
+        }
+
+        function getCurrentDateParts() {
+            const now = new Date();
+            const dateText = now.toLocaleDateString(undefined, {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+            const dayText = now.toLocaleDateString(undefined, {
+                weekday: 'long'
+            });
+            return { dateText, dayText };
+        }
+
+        function renderTodoEntryPage() {
+            const username = getCurrentUsername();
+            const key = getTodoHistoryKey(username);
+            const raw = localStorage.getItem(key);
+            const items = raw ? JSON.parse(raw) : [];
+            const list = document.getElementById('todo-entry-list');
+            const parts = getCurrentDateParts();
+
+            document.getElementById('todo-date').textContent = parts.dateText;
+            document.getElementById('todo-day').textContent = parts.dayText;
+
+            if (!Array.isArray(items) || items.length === 0) {
+                list.innerHTML = '<div class="todo-empty">No items yet. Type in the box above and press Enter.</div>';
+                return;
+            }
+
+            list.innerHTML = items.map((item, index) => {
+                const safeText = typeof item === 'string' ? item : item.text;
+                const checked = typeof item === 'object' && item.checked ? 'checked' : '';
+                return '<label class="todo-check-row">' +
+                    '<input type="checkbox" data-index="' + index + '" ' + checked + '>' +
+                    '<span>' + safeText + '</span>' +
+                    '</label>';
+            }).join('');
+        }
+
+        function openTodoEntryPage() {
+            hideAllPages();
+            document.getElementById('todo-entry-page').classList.remove('is-hidden');
+            document.getElementById('todo-entry-page').classList.add('is-active');
+            showBackButton();
+            currentScreen = 'todo-entry';
+            updateHeaderTone();
+            renderTodoEntryPage();
+            document.getElementById('todo-entry-input').focus();
+        }
+
+        function resetTimer() {
+            stopTimerInterval();
+            stopTimerLoopSound();
+            timerDigits = ['0', '0', '0', '0', '0', '0'];
+            timerTotalSeconds = 0;
+            document.getElementById('timer-note').textContent = 'Type 6 number keys for HHMMSS. Use Backspace to erase. Press Enter to start or pause.';
+            renderTimerFromDigits();
+        }
+
+        function toggleTimerRun() {
+            if (timerInterval) {
+                stopTimerInterval();
+                stopTimerLoopSound();
+                document.getElementById('timer-note').textContent = 'Paused. Press Enter or START / PAUSE to continue.';
+                return;
+            }
+
+            syncTimerSecondsFromDigits();
+            if (timerTotalSeconds <= 0) {
+                document.getElementById('timer-note').textContent = 'Enter a time first using number keys.';
+                return;
+            }
+
+            document.getElementById('timer-note').textContent = 'Timer is running...';
+            startTimerLoopSound();
+            timerInterval = setInterval(() => {
+                if (timerTotalSeconds <= 0) {
+                    stopTimerInterval();
+                    stopTimerLoopSound();
+                    document.getElementById('timer-note').textContent = 'Time is up! Press RESET to set a new timer.';
+                    playEndBeep();
+                    return;
+                }
+                timerTotalSeconds -= 1;
+                renderTimerFromSeconds();
+                if (timerTotalSeconds <= 0) {
+                    stopTimerInterval();
+                    stopTimerLoopSound();
+                    document.getElementById('timer-note').textContent = 'Time is up! Press RESET to set a new timer.';
+                    playEndBeep();
+                }
+            }, 1000);
+        }
+
+        function logoutUser(event) {
+            if (event) {
+                event.stopPropagation();
+            }
+            localStorage.removeItem('currentUser');
+            closeSettingsMenu();
+            closeProfilePopup();
+            closeChoicePopup();
+            handleBack();
+        }
+
+        function showWelcomePage(username) {
+            clearAuthFields();
+            hideAllPages();
+            document.getElementById('welcome-page').classList.remove('is-hidden');
+            document.getElementById('welcome-page').classList.add('is-active');
+            hideBackButton();
+            createStars();
+            updateProfilePopup();
+            closeSettingsMenu();
+            closeChoicePopup();
+            currentScreen = 'welcome';
+            updateHeaderTone();
+            startBackgroundMusic();
+            typeWelcomeMessage(username);
+        }
+
+        async function initAccounts() {
+            const stored = localStorage.getItem(getLocalAccountKey());
+            if (!stored) {
+                writeLocalAccounts(DEFAULT_LOCAL_ACCOUNTS.map((account) => ({ ...account })));
+            }
+        }
+        
+
+        function showLoginPage() {
+            hideAllPages();
+            document.getElementById('login-page').classList.remove('is-hidden');
+            document.getElementById('login-page').classList.add('is-active');
+            showBackButton();
+            currentScreen = 'login';
+            updateHeaderTone();
+            clearAuthFields();
+            document.getElementById('username').focus();
+        }
+
+        function showCreateAccountPage() {
+            hideAllPages();
+            document.getElementById('create-account-page').classList.remove('is-hidden');
+            document.getElementById('create-account-page').classList.add('is-active');
+            showBackButton();
+            currentScreen = 'create-account';
+            updateHeaderTone();
+            clearAuthFields();
+            document.getElementById('new-username').focus();
+        }
+
+        function handleBack() {
+            if (currentScreen === 'timer') {
+                stopTimerInterval();
+                stopTimerLoopSound();
+                showWelcomePage(getCurrentUsername());
+                return;
+            }
+            if (currentScreen === 'todo') {
+                showWelcomePage(getCurrentUsername());
+                return;
+            }
+            if (currentScreen === 'todo-entry') {
+                openTodoPage();
+                return;
+            }
+            if (currentScreen === 'diary-entry') {
+                saveDiaryEntry();
+                return;
+            }
+            if (currentScreen === 'diary-home') {
+                showWelcomePage(getCurrentUsername());
+                return;
+            }
+            if (currentScreen === 'memory-page') {
+                saveCurrentPhotoMemoryState();
+                openPhotoMemoryHomePage();
+                return;
+            }
+            if (currentScreen === 'memory-home') {
+                showWelcomePage(getCurrentUsername());
+                return;
+            }
+            showMainPage();
+        }
+
+        async function handleDone() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            if (!username) {
+                showErrorPopup('enter your username');
+                return;
+            }
+            if (!password) {
+                showErrorPopup('enter your Password');
+                return;
+            }
+
+            const localAccount = getStoredAccount(username);
+            if (localAccount && localAccount.password === password) {
+                if (localAccount.banned) {
+                    showErrorPopup('this account has been blocked');
+                    return;
+                }
+                localStorage.setItem('currentUser', username);
+                showSuccessPopup();
+                clearAuthFields();
+                setTimeout(() => {
+                    showWelcomePage(username);
+                }, 900);
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username: username, password: password })
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    const fallbackAccount = getStoredAccount(username);
+                    if (fallbackAccount && fallbackAccount.password === password) {
+                        if (fallbackAccount.banned) {
+                            showErrorPopup('this account has been blocked');
+                            return;
+                        }
+                        localStorage.setItem('currentUser', username);
+                        showSuccessPopup();
+                        clearAuthFields();
+                        setTimeout(() => {
+                            showWelcomePage(username);
+                        }, 900);
+                        return;
+                    }
+                    showErrorPopup(data.error || 'invalid username and password');
+                    return;
+                }
+                localStorage.setItem('currentUser', username);
+                showSuccessPopup();
+                clearAuthFields();
+                setTimeout(() => {
+                    showWelcomePage(username);
+                }, 900);
+            } catch (error) {
+                console.error(error);
+                const fallbackAccount = getStoredAccount(username);
+                if (fallbackAccount && fallbackAccount.password === password) {
+                    if (fallbackAccount.banned) {
+                        showErrorPopup('this account has been blocked');
+                        return;
+                    }
+                    localStorage.setItem('currentUser', username);
+                    showSuccessPopup();
+                    clearAuthFields();
+                    setTimeout(() => {
+                        showWelcomePage(username);
+                    }, 900);
+                    return;
+                }
+                showErrorPopup('could not log in');
+            }
+        }
+
+        function showErrorPopup(msg) {
+            const popup = document.getElementById('error-popup');
+            const msgEl = document.getElementById('error-msg');
+            clearTimeout(errorPopupTimeout);
+            msgEl.textContent = msg;
+            popup.style.display = 'block';
+            popup.classList.remove('show');
+            void popup.offsetWidth;
+            popup.classList.add('show');
+            errorPopupTimeout = setTimeout(() => {
+                popup.classList.remove('show');
+                popup.style.display = 'none';
+            }, 3500);
+        }
+
+        function showSuccessPopup() {
+            const popup = document.getElementById('success-popup');
+            clearTimeout(successPopupTimeout);
+            popup.querySelector('p').textContent = 'Logged in successfully! ♡';
+            popup.style.display = 'block';
+            popup.classList.remove('show');
+            void popup.offsetWidth;
+            popup.classList.add('show');
+            successPopupTimeout = setTimeout(() => {
+                popup.classList.remove('show');
+                popup.style.display = 'none';
+            }, 2500);
+        }
+
+        function showAccountCreatedPopup() {
+            const popup = document.getElementById('success-popup');
+            clearTimeout(successPopupTimeout);
+            popup.querySelector('p').textContent = 'Account created successfully! ♡';
+            popup.style.display = 'block';
+            popup.classList.remove('show');
+            void popup.offsetWidth;
+            popup.classList.add('show');
+            successPopupTimeout = setTimeout(() => {
+                popup.classList.remove('show');
+                popup.style.display = 'none';
+            }, 2500);
+        }
+
+        async function handleCreateDone() {
+            const username = document.getElementById('new-username').value.trim();
+            const password = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            if (!username) {
+                showErrorPopup('enter your username');
+                return;
+            }
+            if (!password) {
+                showErrorPopup('enter your Password');
+                return;
+            }
+            if (!confirmPassword) {
+                showErrorPopup('confirm your Password');
+                return;
+            }
+            if (password !== confirmPassword) {
+                showErrorPopup('passwords do not match');
+                return;
+            }
+
+            const existingLocalAccount = getStoredAccount(username);
+            if (existingLocalAccount) {
+                showErrorPopup('username already exists');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/accounts', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username: username, password: password })
+                });
+                const data = await response.json();
+                if (!response.ok) {
+                    if (data.error && data.error.toLowerCase().includes('already exists')) {
+                        showErrorPopup('username already exists');
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.error(error);
+                // Fall back to local storage below.
+            }
+
+            upsertStoredAccount(username, password);
+            localStorage.setItem('currentUser', username);
+            clearAuthFields();
+            showAccountCreatedPopup();
+            setTimeout(() => {
+                showWelcomePage(username);
+            }, 900);
+        }
+
+        function handleCreateAccount() {
+            showCreateAccountPage();
+        }
+
+        function handleStart() {
+            openChoicePopup();
+        }
+
+        // Init on load
+        window.onload = async function () {
+            await initAccounts();
+            createStars();
+            updateProfilePopup();
+            updateBackgroundMusicButton();
+            updateTimerSoundIcon();
+            renderTimerFromDigits();
+            playLaunchSplash();
+
+            document.getElementById('password').addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    handleDone();
+                }
+            });
+
+            document.getElementById('username').addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    handleDone();
+                }
+            });
+
+            document.getElementById('confirm-password').addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    handleCreateDone();
+                }
+            });
+
+            document.getElementById('new-password').addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    handleCreateDone();
+                }
+            });
+
+            document.getElementById('new-username').addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    handleCreateDone();
+                }
+            });
+
+            document.getElementById('todo-entry-input').addEventListener('keydown', function (event) {
+                if (event.key !== 'Enter') {
+                    return;
+                }
+
+                event.preventDefault();
+                const username = getCurrentUsername();
+                const value = event.target.value.trim();
+                if (!value) {
+                    return;
+                }
+
+                const key = getTodoHistoryKey(username);
+                const raw = localStorage.getItem(key);
+                const items = raw ? JSON.parse(raw) : [];
+                items.unshift({ text: value, checked: false });
+                localStorage.setItem(key, JSON.stringify(items));
+                event.target.value = '';
+                renderTodoEntryPage();
+                renderTodoHistory();
+            });
+
+            const diarySearchInput = document.getElementById('diary-search-input');
+            if (diarySearchInput) {
+                diarySearchInput.addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        renderDiaryHomePage();
+                    }
+                });
+            }
+
+            const diaryTextarea = document.getElementById('diary-textarea');
+            if (diaryTextarea) {
+                diaryTextarea.addEventListener('keydown', function (event) {
+                    if (event.ctrlKey && event.key === 's') {
+                        event.preventDefault();
+                        saveDiaryEntry();
+                    }
+                });
+            }
+
+            document.getElementById('profile-image-input').addEventListener('change', function (event) {
+                const file = event.target.files && event.target.files[0];
+                if (!file) {
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (loadEvent) {
+                    const result = loadEvent.target && loadEvent.target.result;
+                    if (typeof result === 'string') {
+                        localStorage.setItem(getProfilePhotoKey(getCurrentUsername()), result);
+                        updateProfilePopup();
+                    }
+                };
+                reader.readAsDataURL(file);
+            });
+
+            const photoMemoryFileInput = document.getElementById('photo-memory-file-input');
+            if (photoMemoryFileInput) {
+                photoMemoryFileInput.addEventListener('change', handlePhotoMemoryUpload);
+            }
+
+            const photoMemoryTitleInput = document.getElementById('photo-memory-title-input');
+            if (photoMemoryTitleInput) {
+                photoMemoryTitleInput.addEventListener('input', savePhotoMemoryPageTitle);
+            }
+
+            document.addEventListener('click', function (event) {
+                if (event.target.closest('button')) {
+                    ensureMusicAndClickSound();
+                }
+                const wrap = document.querySelector('.settings-wrap');
+                const popup = document.getElementById('profile-popup');
+                if (wrap && !wrap.contains(event.target)) {
+                    closeSettingsMenu();
+                }
+                if (!document.getElementById('profile-popup').classList.contains('is-hidden') &&
+                    popup &&
+                    !popup.contains(event.target) &&
+                    !document.getElementById('profile-overlay').contains(event.target)) {
+                    closeProfilePopup();
+                }
+
+                if (event.target.matches('#todo-entry-list input[type="checkbox"]')) {
+                    const username = getCurrentUsername();
+                    const key = getTodoHistoryKey(username);
+                    const raw = localStorage.getItem(key);
+                    const items = raw ? JSON.parse(raw) : [];
+                    const index = parseInt(event.target.getAttribute('data-index'), 10);
+                    if (!Number.isNaN(index) && items[index]) {
+                        if (typeof items[index] === 'string') {
+                            items[index] = { text: items[index], checked: event.target.checked };
+                        } else {
+                            items[index].checked = event.target.checked;
+                        }
+                        localStorage.setItem(key, JSON.stringify(items));
+                        renderTodoHistory();
+                    }
+                }
+            });
+
+            document.addEventListener('keydown', function (event) {
+                if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'm') {
+                    event.preventDefault();
+                    openAdminPopup();
+                    return;
+                }
+
+                if (currentScreen !== 'timer') {
+                    return;
+                }
+                if (document.getElementById('admin-popup').classList.contains('is-hidden') === false) {
+                    return;
+                }
+
+                if (/^\d$/.test(event.key)) {
+                    event.preventDefault();
+                    stopTimerInterval();
+                    timerDigits.push(event.key);
+                    timerDigits = timerDigits.slice(-6);
+                    document.getElementById('timer-note').textContent = 'Keyboard set: ' + timerDigits.join('') + '  (HHMMSS)';
+                    renderTimerFromDigits();
+                    return;
+                }
+
+                if (event.key === 'Backspace') {
+                    event.preventDefault();
+                    stopTimerInterval();
+                    timerDigits.pop();
+                    timerDigits.unshift('0');
+                    renderTimerFromDigits();
+                    document.getElementById('timer-note').textContent = 'Use number keys to set HHMMSS.';
+                    return;
+                }
+
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    toggleTimerRun();
+                }
+            });
+
+        };
+    </script>
+
+</body>
+</html>
