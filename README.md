@@ -45,19 +45,26 @@ Mochimelo is a beautifully designed web app that lets you write daily diary entr
 ## 🖥️ Screenshots
 
 ### Home Screen
-![Home](assets/home.png)
+![Home](assets/homepage.png)
+
+### Login 
+![login](assets/loginpage1.png)
+
+### Signup
+![signup](assets/createaccount.png)
+
+### Dashboard
+![dashboard](assets/startpage.png)
 
 ### Choose Mode
-![Choose](assets/choose.png)
+![Choose](assets/choosepage.png)
 
 ### Diary Section
 ![Diary](assets/diary.png)
 
 ### Photo Memory
-![Memory](assets/memory.png)
+![Memory](assets/photomemory.png)
 
-### Login / Signup
-![Auth](assets/auth.png)
 
 ---
 
