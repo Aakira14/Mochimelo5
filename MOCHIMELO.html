@@ -1833,29 +1833,45 @@
     <script>
         const SUPABASE_URL = 'https://vycppefczahkhstfyqrm.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5Y3BwZWZjemFoa2hzdGZ5cXJtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQwODc5ODEsImV4cCI6MjEwOTY2Mzk4MX0.KCwKI1k_u6l6fgO5KmIkxduzn_jYyRDT9xRBtmwPzZ4';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let _supabaseClient = null;
+        function getSupabase() {
+            if (!_supabaseClient && window.supabase) {
+                _supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+            return _supabaseClient;
+        }
 
         async function supabaseGetAccount(username) {
-            const { data } = await supabase.from('accounts').select('*').eq('username', username).single();
+            const sb = getSupabase();
+            if (!sb) return null;
+            const { data } = await sb.from('accounts').select('*').eq('username', username).single();
             return data || null;
         }
 
         async function supabaseCreateAccount(username, password) {
-            const { error } = await supabase.from('accounts').insert([{ username, password, banned: false }]);
+            const sb = getSupabase();
+            if (!sb) return false;
+            const { error } = await sb.from('accounts').insert([{ username, password, banned: false }]);
             return !error;
         }
 
         async function supabaseGetAllAccounts() {
-            const { data } = await supabase.from('accounts').select('*');
+            const sb = getSupabase();
+            if (!sb) return [];
+            const { data } = await sb.from('accounts').select('*');
             return data || [];
         }
 
         async function supabaseBanUser(username) {
-            await supabase.from('accounts').update({ banned: true }).eq('username', username);
+            const sb = getSupabase();
+            if (!sb) return;
+            await sb.from('accounts').update({ banned: true }).eq('username', username);
         }
 
         async function supabaseDeleteUser(username) {
-            await supabase.from('accounts').delete().eq('username', username);
+            const sb = getSupabase();
+            if (!sb) return;
+            await sb.from('accounts').delete().eq('username', username);
         }
 
         let errorPopupTimeout;
@@ -2825,29 +2841,35 @@
             typeNext();
         }
 
+        function finishSplash() {
+            const splash = document.getElementById('splash-screen');
+            splash.classList.add('is-fading');
+            setTimeout(() => {
+                splash.classList.add('is-hidden');
+                splash.classList.remove('is-fading');
+                document.body.classList.remove('app-loading');
+                document.body.classList.add('app-ready');
+                const currentUser = localStorage.getItem('currentUser');
+                if (currentUser) {
+                    showWelcomePage(currentUser);
+                } else {
+                    showMainPage();
+                }
+            }, 850);
+        }
+
         function playLaunchSplash() {
             const splash = document.getElementById('splash-screen');
-            if (!splash) {
-                return;
-            }
+            if (!splash) return;
             splash.classList.remove('is-hidden');
             splash.classList.remove('is-fading');
+            // Safety timeout — always exit splash after 3s no matter what
+            const safetyTimer = setTimeout(finishSplash, 3000);
             typeSplashText(() => {
                 clearTimeout(splashFadeTimeout);
                 splashFadeTimeout = setTimeout(() => {
-                    splash.classList.add('is-fading');
-                    setTimeout(() => {
-                        splash.classList.add('is-hidden');
-                        splash.classList.remove('is-fading');
-                        document.body.classList.remove('app-loading');
-                        document.body.classList.add('app-ready');
-                        const currentUser = localStorage.getItem('currentUser');
-                        if (currentUser) {
-                            showWelcomePage(currentUser);
-                        } else {
-                            showMainPage();
-                        }
-                    }, 850);
+                    clearTimeout(safetyTimer);
+                    finishSplash();
                 }, 700);
             });
         }
