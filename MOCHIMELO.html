@@ -3367,18 +3367,17 @@
             typeWelcomeMessage(username);
         }
 
-        async function initAccounts() {
+        function initAccounts() {
             const stored = localStorage.getItem(getLocalAccountKey());
             if (!stored) {
                 writeLocalAccounts(DEFAULT_LOCAL_ACCOUNTS.map((account) => ({ ...account })));
             }
-            // Sync default accounts to Supabase if not already there
-            for (const acc of DEFAULT_LOCAL_ACCOUNTS) {
-                const existing = await supabaseGetAccount(acc.username).catch(() => null);
-                if (!existing) {
-                    await supabaseCreateAccount(acc.username, acc.password).catch(() => {});
-                }
-            }
+            // Sync default accounts to Supabase in background (non-blocking)
+            DEFAULT_LOCAL_ACCOUNTS.forEach((acc) => {
+                supabaseGetAccount(acc.username).then((existing) => {
+                    if (!existing) supabaseCreateAccount(acc.username, acc.password).catch(() => {});
+                }).catch(() => {});
+            });
         }
         
 
@@ -3548,8 +3547,8 @@
         }
 
         // Init on load
-        window.onload = async function () {
-            await initAccounts();
+        window.onload = function () {
+            initAccounts();
             createStars();
             updateProfilePopup();
             updateBackgroundMusicButton();
