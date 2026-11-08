@@ -1829,7 +1829,35 @@
     </div>
 
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script>
+        const SUPABASE_URL = 'https://vycppefczahkhstfyqrm.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5Y3BwZWZjemFoa2hzdGZ5cXJtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQwODc5ODEsImV4cCI6MjEwOTY2Mzk4MX0.KCwKI1k_u6l6fgO5KmIkxduzn_jYyRDT9xRBtmwPzZ4';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function supabaseGetAccount(username) {
+            const { data } = await supabase.from('accounts').select('*').eq('username', username).single();
+            return data || null;
+        }
+
+        async function supabaseCreateAccount(username, password) {
+            const { error } = await supabase.from('accounts').insert([{ username, password, banned: false }]);
+            return !error;
+        }
+
+        async function supabaseGetAllAccounts() {
+            const { data } = await supabase.from('accounts').select('*');
+            return data || [];
+        }
+
+        async function supabaseBanUser(username) {
+            await supabase.from('accounts').update({ banned: true }).eq('username', username);
+        }
+
+        async function supabaseDeleteUser(username) {
+            await supabase.from('accounts').delete().eq('username', username);
+        }
+
         let errorPopupTimeout;
         let successPopupTimeout;
         let typingTimeout;
@@ -2911,126 +2939,44 @@
         }
 
         async function loadAdminUsers() {
-            if (isLocalAdminSession()) {
+            try {
+                accountsCache = await supabaseGetAllAccounts();
+            } catch (e) {
                 accountsCache = readLocalAccounts();
-                renderAdminUsers();
-                return;
             }
-            const response = await fetch('/api/admin/accounts', {
-                headers: {
-                    'X-Admin-Token': adminToken
-                }
-            });
-            const data = await response.json();
-            if (!response.ok) {
-                throw new Error(data.error || 'Could not load admin users');
-            }
-            accountsCache = Array.isArray(data.accounts) ? data.accounts : [];
             renderAdminUsers();
         }
 
         async function submitAdminLogin() {
             const secret = document.getElementById('admin-secret').value;
-            if (!secret) {
-                showErrorPopup('enter owner password');
+            if (!secret) { showErrorPopup('enter owner password'); return; }
+            if (secret.trim() !== '1111') {
+                showErrorPopup('wrong owner password');
+                document.getElementById('admin-status').textContent = 'Status: Locked';
                 return;
             }
-
-            document.getElementById('admin-status').textContent = 'Status: Unlocking...';
-            try {
-                const response = await fetch('/api/admin/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ secret: secret })
-                });
-                const data = await response.json();
-                if (!response.ok) {
-                    if (secret.trim() !== '1111') {
-                        showErrorPopup(data.error || 'owner login failed');
-                        document.getElementById('admin-status').textContent = 'Status: Locked';
-                        return;
-                    }
-                    adminToken = 'local-admin';
-                    accountsCache = readLocalAccounts();
-                    document.getElementById('admin-login-panel').classList.add('is-hidden');
-                    document.getElementById('admin-users-panel').classList.remove('is-hidden');
-                    document.getElementById('admin-status').textContent = 'Status: Unlocked • local fallback';
-                    renderAdminUsers();
-                    return;
-                }
-
-                adminToken = data.token;
-                document.getElementById('admin-login-panel').classList.add('is-hidden');
-                document.getElementById('admin-users-panel').classList.remove('is-hidden');
-                document.getElementById('admin-status').textContent = 'Status: Unlocked';
-                await loadAdminUsers();
-            } catch (error) {
-                console.error(error);
-                if (secret.trim() !== '1111') {
-                    showErrorPopup('owner login failed');
-                    document.getElementById('admin-status').textContent = 'Status: Locked';
-                    return;
-                }
-                adminToken = 'local-admin';
-                accountsCache = readLocalAccounts();
-                document.getElementById('admin-login-panel').classList.add('is-hidden');
-                document.getElementById('admin-users-panel').classList.remove('is-hidden');
-                document.getElementById('admin-status').textContent = 'Status: Unlocked • local fallback';
-                renderAdminUsers();
-            }
+            adminToken = 'local-admin';
+            document.getElementById('admin-login-panel').classList.add('is-hidden');
+            document.getElementById('admin-users-panel').classList.remove('is-hidden');
+            document.getElementById('admin-status').textContent = 'Status: Unlocked';
+            await loadAdminUsers();
         }
 
         async function banUser(username) {
-            if (isLocalAdminSession()) {
-                const accounts = readLocalAccounts();
-                const user = accounts.find((account) => account.username === username);
-                if (!user) {
-                    showErrorPopup('could not ban user');
-                    return;
-                }
-                user.banned = true;
-                writeLocalAccounts(accounts);
-                accountsCache = accounts;
-                renderAdminUsers();
-                return;
-            }
-            const response = await fetch('/api/admin/ban', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Admin-Token': adminToken
-                },
-                body: JSON.stringify({ username: username })
-            });
-            const data = await response.json();
-            if (!response.ok) {
-                showErrorPopup(data.error || 'could not ban user');
+            try {
+                await supabaseBanUser(username);
+            } catch (e) {
+                showErrorPopup('could not ban user');
                 return;
             }
             await loadAdminUsers();
         }
 
         async function deleteUser(username) {
-            if (isLocalAdminSession()) {
-                const accounts = readLocalAccounts().filter((account) => account.username !== username);
-                writeLocalAccounts(accounts);
-                accountsCache = accounts;
-                renderAdminUsers();
-                return;
-            }
-            const response = await fetch('/api/admin/delete', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Admin-Token': adminToken
-                },
-                body: JSON.stringify({ username: username })
-            });
-            const data = await response.json();
-            if (!response.ok) {
-                showErrorPopup(data.error || 'could not delete user');
+            try {
+                await supabaseDeleteUser(username);
+            } catch (e) {
+                showErrorPopup('could not delete user');
                 return;
             }
             await loadAdminUsers();
@@ -3426,6 +3372,13 @@
             if (!stored) {
                 writeLocalAccounts(DEFAULT_LOCAL_ACCOUNTS.map((account) => ({ ...account })));
             }
+            // Sync default accounts to Supabase if not already there
+            for (const acc of DEFAULT_LOCAL_ACCOUNTS) {
+                const existing = await supabaseGetAccount(acc.username).catch(() => null);
+                if (!existing) {
+                    await supabaseCreateAccount(acc.username, acc.password).catch(() => {});
+                }
+            }
         }
         
 
@@ -3489,81 +3442,34 @@
         async function handleDone() {
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
-            if (!username) {
-                showErrorPopup('enter your username');
-                return;
-            }
-            if (!password) {
-                showErrorPopup('enter your Password');
-                return;
-            }
+            if (!username) { showErrorPopup('enter your username'); return; }
+            if (!password) { showErrorPopup('enter your Password'); return; }
 
-            const localAccount = getStoredAccount(username);
-            if (localAccount && localAccount.password === password) {
-                if (localAccount.banned) {
-                    showErrorPopup('this account has been blocked');
-                    return;
-                }
-                localStorage.setItem('currentUser', username);
-                showSuccessPopup();
-                clearAuthFields();
-                setTimeout(() => {
-                    showWelcomePage(username);
-                }, 900);
-                return;
-            }
-
+            // Try Supabase first
             try {
-                const response = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username: username, password: password })
-                });
-                const data = await response.json();
-                if (!response.ok) {
-                    const fallbackAccount = getStoredAccount(username);
-                    if (fallbackAccount && fallbackAccount.password === password) {
-                        if (fallbackAccount.banned) {
-                            showErrorPopup('this account has been blocked');
-                            return;
-                        }
-                        localStorage.setItem('currentUser', username);
-                        showSuccessPopup();
-                        clearAuthFields();
-                        setTimeout(() => {
-                            showWelcomePage(username);
-                        }, 900);
-                        return;
-                    }
-                    showErrorPopup(data.error || 'invalid username and password');
-                    return;
-                }
-                localStorage.setItem('currentUser', username);
-                showSuccessPopup();
-                clearAuthFields();
-                setTimeout(() => {
-                    showWelcomePage(username);
-                }, 900);
-            } catch (error) {
-                console.error(error);
-                const fallbackAccount = getStoredAccount(username);
-                if (fallbackAccount && fallbackAccount.password === password) {
-                    if (fallbackAccount.banned) {
-                        showErrorPopup('this account has been blocked');
-                        return;
-                    }
+                const user = await supabaseGetAccount(username);
+                if (user) {
+                    if (user.password !== password) { showErrorPopup('invalid username or password'); return; }
+                    if (user.banned) { showErrorPopup('this account has been blocked'); return; }
                     localStorage.setItem('currentUser', username);
                     showSuccessPopup();
                     clearAuthFields();
-                    setTimeout(() => {
-                        showWelcomePage(username);
-                    }, 900);
+                    setTimeout(() => showWelcomePage(username), 900);
                     return;
                 }
-                showErrorPopup('could not log in');
+            } catch (e) {}
+
+            // Fallback to local
+            const localAccount = getStoredAccount(username);
+            if (localAccount && localAccount.password === password) {
+                if (localAccount.banned) { showErrorPopup('this account has been blocked'); return; }
+                localStorage.setItem('currentUser', username);
+                showSuccessPopup();
+                clearAuthFields();
+                setTimeout(() => showWelcomePage(username), 900);
+                return;
             }
+            showErrorPopup('invalid username or password');
         }
 
         function showErrorPopup(msg) {
@@ -3614,56 +3520,23 @@
             const password = document.getElementById('new-password').value;
             const confirmPassword = document.getElementById('confirm-password').value;
 
-            if (!username) {
-                showErrorPopup('enter your username');
-                return;
-            }
-            if (!password) {
-                showErrorPopup('enter your Password');
-                return;
-            }
-            if (!confirmPassword) {
-                showErrorPopup('confirm your Password');
-                return;
-            }
-            if (password !== confirmPassword) {
-                showErrorPopup('passwords do not match');
-                return;
-            }
+            if (!username) { showErrorPopup('enter your username'); return; }
+            if (!password) { showErrorPopup('enter your Password'); return; }
+            if (!confirmPassword) { showErrorPopup('confirm your Password'); return; }
+            if (password !== confirmPassword) { showErrorPopup('passwords do not match'); return; }
 
-            const existingLocalAccount = getStoredAccount(username);
-            if (existingLocalAccount) {
-                showErrorPopup('username already exists');
-                return;
-            }
-
+            // Check Supabase first
             try {
-                const response = await fetch('/api/accounts', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username: username, password: password })
-                });
-                const data = await response.json();
-                if (!response.ok) {
-                    if (data.error && data.error.toLowerCase().includes('already exists')) {
-                        showErrorPopup('username already exists');
-                        return;
-                    }
-                }
-            } catch (error) {
-                console.error(error);
-                // Fall back to local storage below.
-            }
+                const existing = await supabaseGetAccount(username);
+                if (existing) { showErrorPopup('username already exists'); return; }
+                await supabaseCreateAccount(username, password);
+            } catch (e) {}
 
             upsertStoredAccount(username, password);
             localStorage.setItem('currentUser', username);
             clearAuthFields();
             showAccountCreatedPopup();
-            setTimeout(() => {
-                showWelcomePage(username);
-            }, 900);
+            setTimeout(() => showWelcomePage(username), 900);
         }
 
         function handleCreateAccount() {
