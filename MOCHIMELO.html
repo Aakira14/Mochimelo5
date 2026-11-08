@@ -1830,8 +1830,9 @@
 
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js"></script>
     <script>
+        const SUPABASE_URL = 'https://vycppefczahkhstfyqrm.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5Y3BwZWZjemFoa2hzdGZ5cXJtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQwODc5ODEsImV4cCI6MjEwOTY2Mzk4MX0.KCwKI1k_u6l6fgO5KmIkxduzn_jYyRDT9xRBtmwPzZ4';
         let _supabaseClient = null;
         function getSupabase() {
             if (!_supabaseClient && window.supabase && window.SUPABASE_URL) {
