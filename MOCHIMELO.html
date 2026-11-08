@@ -1835,8 +1835,8 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ5Y3BwZWZjemFoa2hzdGZ5cXJtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQwODc5ODEsImV4cCI6MjEwOTY2Mzk4MX0.KCwKI1k_u6l6fgO5KmIkxduzn_jYyRDT9xRBtmwPzZ4';
         let _supabaseClient = null;
         function getSupabase() {
-            if (!_supabaseClient && window.supabase && window.SUPABASE_URL) {
-                _supabaseClient = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+            if (!_supabaseClient && window.supabase) {
+                _supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             }
             return _supabaseClient;
         }
