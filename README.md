@@ -1,0 +1,92 @@
+# 💜 Mochimelo – Your Cute Digital Diary & Memory Space
+
+> Capture your thoughts, memories, and moments in the most adorable way possible 🐰✨
+
+Mochimelo is a beautifully designed web app that lets you write daily diary entries and create photo memory pages—your own personal safe space on the internet.
+
+---
+
+## ✨ Features
+
+- 📖 **Digital Diary**
+  - Write daily entries
+  - Automatically organized by date
+  - Search entries by keyword or date
+
+- 🖼️ **Photo Memory Pages**
+  - Create custom memory boards
+  - Add and organize your favorite photos
+  - Personalize your memories
+
+- 🔍 **Search System**
+  - Quickly find past diary entries
+  - Filter by words or dates
+
+- 👤 **User Authentication**
+  - Create account & login system
+  - Simple and clean UI
+
+- 🎀 **Aesthetic UI**
+  - Soft pastel theme 💜
+  - Cute pixel-style design 🐾
+  - Smooth and calming experience
+
+---
+
+## 🎯 Highlights
+
+- 🌸 Beginner-friendly and intuitive  
+- 🧠 Acts like a personal emotional space  
+- 💾 Data stored locally (no external dependency)  
+- ⚡ Lightweight and fast  
+
+---
+
+## 🖥️ Screenshots
+
+### Home Screen
+![Home](assets/homepage.png)
+
+### Login 
+![login](assets/loginpage1.png)
+
+### Signup
+![signup](assets/createaccount.png)
+
+### Dashboard
+![dashboard](assets/startpage.png)
+
+### Choose Mode
+![Choose](assets/choosepage.png)
+
+### Diary Section
+![Diary](assets/diary.png)
+
+### Photo Memory
+![Memory](assets/photomemory.png)
+
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend:** HTML, CSS, JavaScript  
+- **Storage:** Local Storage  
+- **Design:** Soft UI + Pixel Aesthetic  
+
+---
+
+## ⚙️ How to Run
+
+```bash
+# Clone repository
+git clone https://github.com/Aakira14/mochimelo.git
+
+# Open folder
+cd mochimelo
+
+# Start the web server
+python server.py
+```
+
+Then open http://localhost:8000 in your browser. The server is required for account features, and it serves the app's static files and assets.
