@@ -2082,7 +2082,7 @@
                     const dateKey = getDateKeyFromDate(new Date());
                     const parts = getCurrentDateParts();
                     return {
-                        id: 'diary-' + dateKey + '-' + index,
+                        id: 'diary-' + username + '-' + dateKey + '-' + index,
                         dateKey: dateKey,
                         dateText: parts.dateText,
                         dayText: parts.dayText,
@@ -2095,7 +2095,7 @@
                     dayText: page.dayText
                 } : formatDatePartsFromKey(dateKey);
                 return {
-                    id: page.id || ('diary-' + dateKey + '-' + index),
+                    id: page.id || ('diary-' + username + '-' + dateKey + '-' + index),
                     dateKey: dateKey,
                     dateText: parts.dateText,
                     dayText: parts.dayText,
@@ -2109,7 +2109,7 @@
                     const todayKey = getDateKeyFromDate(new Date());
                     const parts = getCurrentDateParts();
                     pages = [{
-                        id: 'diary-' + todayKey,
+                        id: 'diary-' + username + '-' + todayKey,
                         dateKey: todayKey,
                         dateText: parts.dateText,
                         dayText: parts.dayText,
@@ -2181,7 +2181,7 @@
             let page = pages.find((entry) => entry.dateKey === todayKey) || null;
             if (!page) {
                 page = {
-                    id: 'diary-' + todayKey,
+                    id: 'diary-' + username + '-' + todayKey,
                     dateKey: todayKey,
                     dateText: parts.dateText,
                     dayText: parts.dayText,
