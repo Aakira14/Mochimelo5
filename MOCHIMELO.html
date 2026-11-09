@@ -2147,7 +2147,7 @@
 
         async function loadDiaryPagesFromCloud(username) {
             const data = await supabaseGetDiaryEntries(username);
-            if (!data) return;
+            if (!data || data.length === 0) return;
             const pages = data.map((row) => ({
                 id: row.id,
                 dateKey: row.date_key,
@@ -2394,7 +2394,7 @@
 
         async function loadPhotoMemoriesFromCloud(username) {
             const data = await supabaseGetPhotoMemories(username);
-            if (!data) return;
+            if (!data || data.length === 0) return;
             const metadataPages = data.map((row) => ({
                 id: row.id,
                 title: row.title || '',
@@ -3494,10 +3494,11 @@
             updateHeaderTone();
             startBackgroundMusic();
             typeWelcomeMessage(username);
-            // Sync existing local data to cloud, then load cloud data
-            syncLocalDataToCloud(username).catch(() => {});
-            loadDiaryPagesFromCloud(username).catch(() => {});
-            loadPhotoMemoriesFromCloud(username).catch(() => {});
+            // Sync local → cloud first, then pull cloud → local
+            syncLocalDataToCloud(username).then(() => {
+                loadDiaryPagesFromCloud(username).catch(() => {});
+                loadPhotoMemoriesFromCloud(username).catch(() => {});
+            }).catch(() => {});
         }
 
         function initAccounts() {
