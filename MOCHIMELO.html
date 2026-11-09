@@ -1874,6 +1874,62 @@
             await sb.from('accounts').delete().eq('username', username);
         }
 
+        // ── Diary Supabase helpers ──
+        async function supabaseGetDiaryEntries(username) {
+            const sb = getSupabase();
+            if (!sb) return null;
+            const { data, error } = await sb.from('diary_entries').select('*').eq('username', username);
+            if (error) return null;
+            return data || [];
+        }
+
+        async function supabaseUpsertDiaryEntry(entry, username) {
+            const sb = getSupabase();
+            if (!sb) return;
+            await sb.from('diary_entries').upsert({
+                id: entry.id,
+                username,
+                date_key: entry.dateKey,
+                date_text: entry.dateText,
+                day_text: entry.dayText,
+                content: entry.content,
+                updated_at: new Date().toISOString()
+            });
+        }
+
+        async function supabaseDeleteDiaryEntry(id) {
+            const sb = getSupabase();
+            if (!sb) return;
+            await sb.from('diary_entries').delete().eq('id', id);
+        }
+
+        // ── Photo Memory Supabase helpers ──
+        async function supabaseGetPhotoMemories(username) {
+            const sb = getSupabase();
+            if (!sb) return null;
+            const { data, error } = await sb.from('photo_memories').select('*').eq('username', username);
+            if (error) return null;
+            return data || [];
+        }
+
+        async function supabaseUpsertPhotoMemory(page, username) {
+            const sb = getSupabase();
+            if (!sb) return;
+            await sb.from('photo_memories').upsert({
+                id: page.id,
+                username,
+                title: page.title || '',
+                created_at: page.createdAt || new Date().toISOString(),
+                items: page.items || []
+            });
+        }
+
+        async function supabaseDeletePhotoMemory(id) {
+            const sb = getSupabase();
+            if (!sb) return;
+            await sb.from('photo_memories').delete().eq('id', id);
+        }
+
         let errorPopupTimeout;
         let successPopupTimeout;
         let typingTimeout;
@@ -2070,6 +2126,19 @@
             localStorage.setItem(getDiaryHistoryKey(username), JSON.stringify(pages));
         }
 
+        async function loadDiaryPagesFromCloud(username) {
+            const data = await supabaseGetDiaryEntries(username);
+            if (!data) return;
+            const pages = data.map((row) => ({
+                id: row.id,
+                dateKey: row.date_key,
+                dateText: row.date_text,
+                dayText: row.day_text,
+                content: row.content || ''
+            }));
+            localStorage.setItem(getDiaryHistoryKey(username), JSON.stringify(pages));
+        }
+
         function getDiaryPageById(pageId) {
             const pages = getCurrentDiaryPages(getCurrentUsername());
             return pages.find((page) => page.id === pageId) || null;
@@ -2190,6 +2259,7 @@
                     pages.unshift(page);
                 }
                 saveDiaryPages(username, pages);
+                supabaseUpsertDiaryEntry(page, username).catch(() => {});
             }
             openDiaryHomePage();
         }
@@ -2221,6 +2291,7 @@
             pages = pages.filter((entry) => entry.id !== deletingId);
             saveDiaryPages(username, pages);
             localStorage.removeItem(getDiaryLegacyKey(username));
+            supabaseDeleteDiaryEntry(deletingId).catch(() => {});
             cancelDeleteDiaryEntry();
             renderDiaryHomePage();
             if (currentScreen === 'diary-entry' && currentDiaryPageId === deletingId) {
@@ -2298,6 +2369,22 @@
                     getPhotoMemoryItemsKey(username, page.id),
                     JSON.stringify(Array.isArray(page.items) ? page.items.map(normalizePhotoMemoryItem) : [])
                 );
+                supabaseUpsertPhotoMemory(page, username).catch(() => {});
+            });
+        }
+
+        async function loadPhotoMemoriesFromCloud(username) {
+            const data = await supabaseGetPhotoMemories(username);
+            if (!data) return;
+            const metadataPages = data.map((row) => ({
+                id: row.id,
+                title: row.title || '',
+                createdAt: row.created_at || new Date().toISOString()
+            }));
+            localStorage.setItem(getPhotoMemoryHistoryKey(username), JSON.stringify(metadataPages));
+            data.forEach((row) => {
+                const items = Array.isArray(row.items) ? row.items.map(normalizePhotoMemoryItem) : [];
+                localStorage.setItem(getPhotoMemoryItemsKey(username, row.id), JSON.stringify(items));
             });
         }
 
@@ -2689,6 +2776,7 @@
             pages = pages.filter((page) => page.id !== deletingId);
             savePhotoMemoryPages(username, pages);
             localStorage.removeItem(getPhotoMemoryItemsKey(username, deletingId));
+            supabaseDeletePhotoMemory(deletingId).catch(() => {});
             cancelDeletePhotoMemoryPage();
             if (deletingId === currentPhotoMemoryPageId) {
                 currentPhotoMemoryPageId = '';
@@ -3387,6 +3475,9 @@
             updateHeaderTone();
             startBackgroundMusic();
             typeWelcomeMessage(username);
+            // Load cloud data in background on login
+            loadDiaryPagesFromCloud(username).catch(() => {});
+            loadPhotoMemoriesFromCloud(username).catch(() => {});
         }
 
         function initAccounts() {
