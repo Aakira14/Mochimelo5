@@ -2128,20 +2128,24 @@
         }
 
         async function syncLocalDataToCloud(username) {
-            // Upload local diary entries that aren't in Supabase yet
             const cloudDiary = await supabaseGetDiaryEntries(username);
-            if (cloudDiary !== null && cloudDiary.length === 0) {
+            if (cloudDiary !== null) {
+                const cloudIds = new Set(cloudDiary.map((r) => r.id));
                 const localPages = getCurrentDiaryPages(username);
                 for (const page of localPages) {
-                    await supabaseUpsertDiaryEntry(page, username).catch(() => {});
+                    if (!cloudIds.has(page.id)) {
+                        await supabaseUpsertDiaryEntry(page, username).catch(() => {});
+                    }
                 }
             }
-            // Upload local photo memories that aren't in Supabase yet
             const cloudMemories = await supabaseGetPhotoMemories(username);
-            if (cloudMemories !== null && cloudMemories.length === 0) {
+            if (cloudMemories !== null) {
+                const cloudIds = new Set(cloudMemories.map((r) => r.id));
                 const localPages = getCurrentPhotoMemoryPages(username);
                 for (const page of localPages) {
-                    await supabaseUpsertPhotoMemory(page, username).catch(() => {});
+                    if (!cloudIds.has(page.id)) {
+                        await supabaseUpsertPhotoMemory(page, username).catch(() => {});
+                    }
                 }
             }
         }
@@ -2149,14 +2153,19 @@
         async function loadDiaryPagesFromCloud(username) {
             const data = await supabaseGetDiaryEntries(username);
             if (!data || data.length === 0) return;
-            const pages = data.map((row) => ({
+            const cloudPages = data.map((row) => ({
                 id: row.id,
                 dateKey: row.date_key,
                 dateText: row.date_text,
                 dayText: row.day_text,
                 content: row.content || ''
             }));
-            localStorage.setItem(getDiaryHistoryKey(username), JSON.stringify(pages));
+            const localPages = getCurrentDiaryPages(username);
+            const merged = [...cloudPages];
+            localPages.forEach((local) => {
+                if (!merged.find((p) => p.id === local.id)) merged.push(local);
+            });
+            localStorage.setItem(getDiaryHistoryKey(username), JSON.stringify(merged));
         }
 
         function getDiaryPageById(pageId) {
