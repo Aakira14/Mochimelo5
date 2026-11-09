@@ -2442,7 +2442,7 @@
 
         function createPhotoMemoryPageRecord() {
             return {
-                id: makeUniqueId('memory-page'),
+                id: makeUniqueId('memory-' + getCurrentUsername()),
                 title: '',
                 createdAt: new Date().toISOString(),
                 items: []
