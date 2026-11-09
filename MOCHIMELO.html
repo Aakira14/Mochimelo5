@@ -2126,6 +2126,25 @@
             localStorage.setItem(getDiaryHistoryKey(username), JSON.stringify(pages));
         }
 
+        async function syncLocalDataToCloud(username) {
+            // Upload local diary entries that aren't in Supabase yet
+            const cloudDiary = await supabaseGetDiaryEntries(username);
+            if (cloudDiary !== null && cloudDiary.length === 0) {
+                const localPages = getCurrentDiaryPages(username);
+                for (const page of localPages) {
+                    await supabaseUpsertDiaryEntry(page, username).catch(() => {});
+                }
+            }
+            // Upload local photo memories that aren't in Supabase yet
+            const cloudMemories = await supabaseGetPhotoMemories(username);
+            if (cloudMemories !== null && cloudMemories.length === 0) {
+                const localPages = getCurrentPhotoMemoryPages(username);
+                for (const page of localPages) {
+                    await supabaseUpsertPhotoMemory(page, username).catch(() => {});
+                }
+            }
+        }
+
         async function loadDiaryPagesFromCloud(username) {
             const data = await supabaseGetDiaryEntries(username);
             if (!data) return;
@@ -3475,7 +3494,8 @@
             updateHeaderTone();
             startBackgroundMusic();
             typeWelcomeMessage(username);
-            // Load cloud data in background on login
+            // Sync existing local data to cloud, then load cloud data
+            syncLocalDataToCloud(username).catch(() => {});
             loadDiaryPagesFromCloud(username).catch(() => {});
             loadPhotoMemoriesFromCloud(username).catch(() => {});
         }
