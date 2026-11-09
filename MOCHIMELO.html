@@ -1886,7 +1886,7 @@
         async function supabaseUpsertDiaryEntry(entry, username) {
             const sb = getSupabase();
             if (!sb) return;
-            await sb.from('diary_entries').upsert({
+            const { error } = await sb.from('diary_entries').upsert({
                 id: entry.id,
                 username,
                 date_key: entry.dateKey,
@@ -1895,6 +1895,7 @@
                 content: entry.content,
                 updated_at: new Date().toISOString()
             });
+            if (error) console.error('upsert diary error:', error);
         }
 
         async function supabaseDeleteDiaryEntry(id) {
