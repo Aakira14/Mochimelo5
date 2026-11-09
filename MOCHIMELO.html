@@ -2410,7 +2410,11 @@
                 title: row.title || '',
                 createdAt: row.created_at || new Date().toISOString()
             }));
-            localStorage.setItem(getPhotoMemoryHistoryKey(username), JSON.stringify(metadataPages));
+            const localPages = getCurrentPhotoMemoryPages(username);
+            const cloudIds = new Set(metadataPages.map((p) => p.id));
+            const localOnly = localPages.filter((p) => !cloudIds.has(p.id));
+            const merged = [...metadataPages, ...localOnly];
+            localStorage.setItem(getPhotoMemoryHistoryKey(username), JSON.stringify(merged));
             data.forEach((row) => {
                 const items = Array.isArray(row.items) ? row.items.map(normalizePhotoMemoryItem) : [];
                 localStorage.setItem(getPhotoMemoryItemsKey(username, row.id), JSON.stringify(items));
